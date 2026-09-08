@@ -292,10 +292,16 @@ const server = http.createServer((req, res) => {
         .header-date { font-size: 13px; color: #64748b; font-weight: 700; background: #f8fafc; padding: 4px 10px; border-radius: 20px; border: 1px solid #e2e8f0; }
 
         /* 히어로 배너 */
-        .hero-banner { background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%); border-radius: 18px; padding: 18px; margin-bottom: 18px; border: 1px solid #fde047; }
+        .hero-banner { background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%); border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid #fde047; }
         .hero-tag { display: inline-block; background: #0f172a; color: #ffffff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 20px; margin-bottom: 8px; }
         .hero-title { font-size: 18px; font-weight: 800; color: #854d0e; line-height: 1.35; margin-bottom: 6px; }
         .hero-desc { font-size: 13px; color: #a16207; font-weight: 500; }
+
+        /* 12간지 빠른 띠 찾기 가로 스크롤 바 */
+        .zodiac-quick-nav { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 14px 2px; scrollbar-width: none; -ms-overflow-style: none; margin-bottom: 6px; }
+        .zodiac-quick-nav::-webkit-scrollbar { display: none; }
+        .zodiac-chip { flex-shrink: 0; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 20px; padding: 7px 12px; font-size: 13px; font-weight: 800; color: #334155; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: all 0.15s ease; }
+        .zodiac-chip:active { background: #0284c7; color: #ffffff; border-color: #0284c7; transform: scale(0.95); }
 
         /* 탭 컨텐츠 */
         .tab-content { display: none; }
@@ -317,16 +323,14 @@ const server = http.createServer((req, res) => {
         .btn-primary { width: 100%; padding: 15px; border-radius: 14px; border: none; background: #0284c7; color: #ffffff; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 6px; box-shadow: 0 4px 12px rgba(2,132,199,0.25); transition: 0.15s; }
         .btn-primary:active { transform: scale(0.98); }
 
-        /* ============================================== */
-        /* 하단 고정 5대 네비게이션 바 (지정 아이콘 & 명칭) */
-        /* ============================================== */
+        /* 하단 고정 5대 네비게이션 바 */
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; height: 68px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 -4px 16px rgba(0,0,0,0.04); }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 11px; font-weight: 700; gap: 4px; padding: 0; }
         .nav-item.active { color: #0284c7; }
         .nav-icon { font-size: 20px; line-height: 1; }
 
         /* 12간지 띠별 카드 */
-        .zodiac-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .zodiac-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); scroll-margin-top: 15px; }
         .zodiac-header { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800; color: #0f172a; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
         .year-row { background: #f8fafc; border-radius: 10px; padding: 12px; margin-bottom: 8px; border: 1px solid #e2e8f0; }
         .year-badge { font-size: 13px; font-weight: 800; color: #0284c7; margin-bottom: 4px; }
@@ -389,7 +393,6 @@ const server = http.createServer((req, res) => {
         .tarot-topic-btn { flex: 1; padding: 16px 6px; border-radius: 14px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #475569; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
         .tarot-topic-btn.active { background: #7c3aed; color: #ffffff; border-color: #7c3aed; box-shadow: 0 4px 14px rgba(124,58,237,0.3); transform: scale(1.02); }
 
-        /* 3x3 그리드 레이아웃 (초기 숨김) */
         .tarot-grid-container { display: none; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; perspective: 1000px; position: relative; min-height: 280px; }
 
         .tarot-card-item { width: 100%; aspect-ratio: 2 / 3.2; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease; cursor: pointer; }
@@ -444,7 +447,7 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 1. ☀️ 오늘의 운세 (원숭이 아이콘) -->
+        <!-- 1. ☀️ 오늘의 운세 (빠른 띠 찾기 칩 탑재) -->
         <!-- ============================================== -->
         <div id="tabToday" class="tab-content active">
           <div class="hero-banner">
@@ -453,9 +456,18 @@ const server = http.createServer((req, res) => {
             <div class="hero-desc">한국 표준시 기준으로 정밀 계산된 오늘 하루 기운입니다.</div>
           </div>
 
+          <!-- 가로 스크롤 빠른 띠 선택 칩 -->
+          <div class="zodiac-quick-nav">
+            ${zodiacData.map((z, idx) => `
+              <button type="button" class="zodiac-chip" onclick="scrollToZodiac('zodiac_${idx}')">
+                ${z.emoji} ${z.name.replace('띠', '')}
+              </button>
+            `).join('')}
+          </div>
+
           <!-- 12개 띠 카드 렌더링 -->
-          ${zodiacData.map(z => `
-            <div class="zodiac-card">
+          ${zodiacData.map((z, zIdx) => `
+            <div class="zodiac-card" id="zodiac_${zIdx}">
               <div class="zodiac-header">
                 <span>${z.emoji}</span>
                 <span>${z.name} 운세</span>
@@ -475,7 +487,7 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 2. 📜 정밀 사주 x 성명학 (책 아이콘) -->
+        <!-- 2. 📜 정밀 사주 x 성명학 -->
         <!-- ============================================== -->
         <div id="tabSaju" class="tab-content">
           <h2 style="font-size:18px; font-weight:800; margin-bottom:14px; color:#0f172a;">📖 정통 사주 x 성명학 분석</h2>
@@ -512,7 +524,7 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 3. 🧑 관상 분석 (사람 아이콘 & 이름 '관상') -->
+        <!-- 3. 🧑 관상 분석 -->
         <!-- ============================================== -->
         <div id="tabFace" class="tab-content">
           <h2 style="font-size:18px; font-weight:800; margin-bottom:14px; color:#0f172a;">🧑 관상 x 닮은꼴 분석</h2>
@@ -540,7 +552,7 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 4. 🔮 사주+관상 올인원 프리미엄 결합 메뉴 (책 읽는 사람 아이콘) -->
+        <!-- 4. 🔮 사주+관상 올인원 프리미엄 결합 메뉴 -->
         <!-- ============================================== -->
         <div id="tabCross" class="tab-content">
           <div class="premium-hero">
@@ -548,7 +560,7 @@ const server = http.createServer((req, res) => {
             <h2 style="font-size:20px; font-weight:900; color:#701a75; margin:6px 0;">🔮 사주 x 관상 융합 종합 비책</h2>
             <p style="font-size:13.5px; color:#86198f; line-height:1.5;">사주 원국(선천운)의 빈틈을 얼굴 관상(후천운)이 어떻게 보완하는지 한 화면에서 입체 분석하는 아씨 사주 독점 프리미엄 리포트입니다.</p>
             <div class="price-line">
-              <s>단품가 5,800원</s> $\rightarrow$ <b>특별 할인가 3,400원 (테스트 무료)</b>
+              <s>단품가 5,800원</s> → <b>특별 할인가 3,400원 (테스트 무료)</b>
             </div>
           </div>
 
@@ -603,7 +615,7 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 5. 🔮 타로점 탭 (화려한 2초 중앙 확대 연출 탑재) -->
+        <!-- 5. 🔮 타로점 탭 (화려한 2초 중앙 확대 연출) -->
         <!-- ============================================== -->
         <div id="tabTarot" class="tab-content">
           <div style="background:linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border:1px solid #c4b5fd; border-radius:18px; padding:16px; margin-bottom:14px;">
@@ -653,7 +665,7 @@ const server = http.createServer((req, res) => {
       </div>
 
       <!-- ============================================== -->
-      <!-- 하단 고정 5대 네비게이션 바 (지정 아이콘 & 명칭 적용) -->
+      <!-- 하단 고정 5대 네비게이션 바 (아이콘: 🃏 교체 완료) -->
       <!-- ============================================== -->
       <nav class="bottom-nav">
         <button type="button" class="nav-item active" id="navToday" onclick="switchNav('today')">
@@ -673,7 +685,7 @@ const server = http.createServer((req, res) => {
           <span>사주+관상</span>
         </button>
         <button type="button" class="nav-item" id="navTarot" onclick="switchNav('tarot')">
-          <span class="nav-icon">🎴</span>
+          <span class="nav-icon">🃏</span>
           <span>타로점</span>
         </button>
       </nav>
@@ -705,10 +717,10 @@ const server = http.createServer((req, res) => {
             celeb: '유재석 상 (성실 번영형)',
             type: '청수형(淸秀形) - 총명함과 깊은 신뢰감',
             desc: '이마에서 턱까지 균형이 단정하며 입매가 다부져 대중의 신뢰를 얻고 장기적인 재물을 모으는 관상입니다.',
-            forehead: '넓고 반듯함 $\\\\rightarrow$ 뛰어난 순발력과 소통 능력',
-            eyes: '눈꼬리가 차분함 $\\\\rightarrow$ 신중하고 배려심 넘치는 처세술',
-            nose: '콧날이 곧고 바름 $\\\\rightarrow$ 정직한 재물 축적과 끈기',
-            mouth: '입꼬리가 단단히 닫힘 $\\\\rightarrow$ 높은 책임감',
+            forehead: '넓고 반듯함 → 뛰어난 순발력과 소통 능력',
+            eyes: '눈꼬리가 차분함 → 신중하고 배려심 넘치는 처세술',
+            nose: '콧날이 곧고 바름 → 정직한 재물 축적과 끈기',
+            mouth: '입꼬리가 단단히 닫힘 → 높은 책임감',
             peak: '40대 중반 ~ 60대까지 긴 전성기 유지',
             style: '조직을 조율하고 팀워크를 이끄는 온화한 리더십',
             mate: '말씨가 부드럽고 차분한 현모양처/조력자형 인상',
@@ -718,10 +730,10 @@ const server = http.createServer((req, res) => {
             celeb: '이정재 상 (카리스마 대권형)',
             type: '위맹형(威猛形) - 당당한 기백과 리더십',
             desc: '눈빛에 중심이 서 있고 턱이 묵직하여 큰 무대나 조직에서 주도권을 잡고 큰 성공을 거머쥐는 관상입니다.',
-            forehead: '이마 양옆이 시원함 $\\\\rightarrow$ 명예운과 결단력',
-            eyes: '눈빛이 깊고 강함 $\\\\rightarrow$ 예리한 통찰력',
-            nose: '콧방울이 도톰함 $\\\\rightarrow$ 큰 자금을 굴리는 재물복',
-            mouth: '입술 윤곽이 뚜렷함 $\\\\rightarrow$ 강한 설득력',
+            forehead: '이마 양옆이 시원함 → 명예운과 결단력',
+            eyes: '눈빛이 깊고 강함 → 예리한 통찰력',
+            nose: '콧방울이 도톰함 → 큰 자금을 굴리는 재물복',
+            mouth: '입술 윤곽이 뚜렷함 → 강한 설득력',
             peak: '30대 후반부터 말년까지 연속적인 대운',
             style: '돌파력이 뛰어나며 독자적인 사업/프로젝트를 이끄는 스타일',
             mate: '지적이고 센스 넘치는 스타일리시한 배필',
@@ -731,10 +743,10 @@ const server = http.createServer((req, res) => {
             celeb: '아이유 상 (예술적 귀인형)',
             type: '수려형(秀麗形) - 풍부한 감수성과 대중 복록',
             desc: '이목구비의 조화가 부드럽고 눈망울이 맑아 주변의 귀인을 끌어당기며 재물이 마르지 않는 관상입니다.',
-            forehead: '이마가 둥글고 깨끗함 $\\\\rightarrow$ 높은 창의성과 총명함',
-            eyes: '흑백이 분명한 맑은 눈 $\\\\rightarrow$ 예술적 감각',
-            nose: '코끝이 단아함 $\\\\rightarrow$ 실속 있는 자산 관리',
-            mouth: '온화하고 도톰한 입술 $\\\\rightarrow$ 귀인 복록',
+            forehead: '이마가 둥글고 깨끗함 → 높은 창의성과 총명함',
+            eyes: '흑백이 분명한 맑은 눈 → 예술적 감각',
+            nose: '코끝이 단아함 → 실속 있는 자산 관리',
+            mouth: '온화하고 도톰한 입술 → 귀인 복록',
             peak: '20대 초반부터 일찍 발복하여 말년까지 번영',
             style: '자기만의 독창적인 콘텐츠로 승부하는 창의형',
             mate: '듬직하고 묵묵히 멘토가 되어주는 배필',
@@ -744,10 +756,10 @@ const server = http.createServer((req, res) => {
             celeb: '손흥민 상 (돌파 질주형)',
             type: '용맹형(勇猛形) - 불굴의 의지와 세계적 성취',
             desc: '눈썹 뼈와 광대의 탄력이 뛰어나 시련을 기회로 바꾸고 정상에 오르는 강인한 승부사의 관상입니다.',
-            forehead: '이마 중앙이 탄탄함 $\\\\rightarrow$ 강한 승부욕',
-            eyes: '집중력이 넘치는 눈매 $\\\\rightarrow$ 기회를 낚아채는 동물적 감각',
-            nose: '콧대가 굵고 흔들림 없음 $\\\\rightarrow$ 강인한 돌파력',
-            mouth: '야무지게 다문 입 $\\\\rightarrow$ 극한의 절제력',
+            forehead: '이마 중앙이 탄탄함 → 강한 승부욕',
+            eyes: '집중력이 넘치는 눈매 → 기회를 낚아채는 동물적 감각',
+            nose: '콧대가 굵고 흔들림 없음 → 강인한 돌파력',
+            mouth: '야무지게 다문 입 → 극한의 절제력',
             peak: '20대 후반 ~ 40대까지 체력과 명예운 폭발',
             style: '글로벌 무대나 경쟁이 치열한 분야에서 최고를 찍는 스타일',
             mate: '내조와 헌신으로 컨디션을 지켜주는 배필',
@@ -976,6 +988,14 @@ const server = http.createServer((req, res) => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // 띠별운세 해당 위치로 부드럽게 스크롤
+        function scrollToZodiac(id) {
+          const el = document.getElementById(id);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+
         // 성별 선택 제어
         function selectGender(prefix, gender) {
           const maleBtn = document.getElementById(prefix + 'MaleBtn');
@@ -1164,7 +1184,7 @@ const server = http.createServer((req, res) => {
 
               <div class="section-card">
                 <h4>🏷️ 성명학 발음오행 조화</h4>
-                <p style="font-size:13px; color:#64748b;">\${r.nameList.map(n => \`\${n.char}(\${n.cho}) $\\rightarrow$ <b>\${n.oheng}</b>\`).join(' | ')}</p>
+                <p style="font-size:13.5px; color:#334155; line-height:1.6; font-weight:600;">\${r.nameList.map(n => \`\${n.char}(\${n.cho}) → <b>\${n.oheng}</b>\`).join(' | ')}</p>
                 <p style="font-size:13px; font-weight:700; color:#0284c7; margin-top:6px;">\${
                   r.isCovered ? \`✅ 부족한 [\${r.lackingElement}] 기운을 이름이 완벽히 방어 중입니다.\` :
                   (!r.lackingElement ? '✅ 오행이 고루 분포되어 있어 이름과도 자연스러운 상생을 이룹니다.' :
@@ -1461,7 +1481,6 @@ const server = http.createServer((req, res) => {
           }, 2000);
         }
 
-        // 9장 중 1장 터치 -> 중앙 1.3배 확대 + 2초 홀딩 후 리포트로 스크롤
         function drawTarotCard(clickedIdx) {
           if (isShufflingNow || isTarotFlipped) return;
           isTarotFlipped = true;
@@ -1469,7 +1488,6 @@ const server = http.createServer((req, res) => {
           const randomIdx = Math.floor(Math.random() * TAROT_MASTER.length);
           const t = TAROT_MASTER[randomIdx];
 
-          // 1단계: 나머지 8장 카드 페이드아웃
           const allCards = document.querySelectorAll('.tarot-card-item');
           allCards.forEach((c, idx) => {
             if (idx !== clickedIdx) {
@@ -1478,7 +1496,6 @@ const server = http.createServer((req, res) => {
             }
           });
 
-          // 2단계: 중앙 쇼케이스 모달 활성화 및 카드 앞면 채우기
           const centerFront = document.getElementById('centerCardFront');
           centerFront.innerHTML = \`
             <div class="front-num">\${t.roman}</div>
@@ -1494,12 +1511,10 @@ const server = http.createServer((req, res) => {
             centerBox.classList.add('flipped');
           }, 50);
 
-          // 3단계: 중앙에서 정확히 2초간 보여준 뒤 스크롤 및 리포트 공개
           setTimeout(() => {
             backdrop.classList.remove('active');
             centerBox.classList.remove('flipped');
 
-            // 그리드의 카드도 앞면으로 고정
             const cardFront = document.getElementById('cardFront' + clickedIdx);
             cardFront.innerHTML = centerFront.innerHTML;
             document.getElementById('tarotCard' + clickedIdx).style.transform = 'rotateY(180deg)';
