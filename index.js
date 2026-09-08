@@ -1,7 +1,9 @@
 const http = require('http');
 const url = require('url');
 
-// 1. 천간/지지/오행 정의
+// ==========================================
+// 1. 기존 사주 & 성명학 엔진 로직
+// ==========================================
 const CHEONGAN = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'];
 const JIJI = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'];
 
@@ -13,7 +15,6 @@ const OHENG = {
   '신': '금', '유': '금', '해': '수', '자': '수'
 };
 
-// 12시진 레이블 정의
 const TIME_SLOTS = [
   { value: 'unknown', label: '태어난 시간 모름' },
   { value: '0', label: '자시 (23:30 ~ 01:29)' },
@@ -82,15 +83,12 @@ function analyzeName(name) {
   return nameOheng;
 }
 
-// 사주 4주 계산 (시두법 적용)
 function getFullSaju(year, month, day, timeIdx) {
-  // 연주
   const yearDiff = year - 1984;
   const yearCheongan = CHEONGAN[((yearDiff % 10) + 10) % 10];
   const yearJiji = JIJI[((yearDiff % 12) + 12) % 12];
   const yearPillar = `${yearCheongan}${yearJiji}`;
 
-  // 일주
   const baseDate = new Date(Date.UTC(1900, 0, 1));
   const targetDate = new Date(Date.UTC(year, month - 1, day));
   const diffDays = Math.floor((targetDate - baseDate) / (1000 * 60 * 60 * 24));
@@ -99,14 +97,12 @@ function getFullSaju(year, month, day, timeIdx) {
   const dayJiji = JIJI[dayIndex % 12];
   const dayPillar = `${dayCheongan}${dayJiji}`;
 
-  // 월주
   const monthJijiIndex = (month + 1) % 12;
   const yearCheonganIdx = CHEONGAN.indexOf(yearCheongan);
   const startMonthCheongan = (yearCheonganIdx % 5) * 2 + 2;
   const monthCheongan = CHEONGAN[(startMonthCheongan + (month - 2 + 12) % 12) % 10];
   const monthPillar = `${monthCheongan}${JIJI[monthJijiIndex]}`;
 
-  // 시주 계산 (시두법: 日干 기준)
   let hourPillar = null;
   if (timeIdx !== 'unknown' && timeIdx !== '' && timeIdx !== null && timeIdx !== undefined) {
     const tIdx = parseInt(timeIdx, 10);
@@ -120,10 +116,8 @@ function getFullSaju(year, month, day, timeIdx) {
   return { yearPillar, monthPillar, dayPillar, hourPillar };
 }
 
-function analyze(name, year, month, day, timeIdx) {
+function analyzeSaju(name, year, month, day, timeIdx) {
   const saju = getFullSaju(year, month, day, timeIdx);
-
-  // 오행 카운트
   const activePillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar];
   if (saju.hourPillar) activePillars.push(saju.hourPillar);
 
@@ -151,9 +145,12 @@ function analyze(name, year, month, day, timeIdx) {
   return { saju, counts, lackingElement, nameAnalysis, nameElements, isCovered, ilganInfo, prescription };
 }
 
+// ==========================================
+// 2. 통합 웹 서버
+// ==========================================
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true);
-  let resultHtml = '';
+  let sajuResultHtml = '';
 
   const qName = parsedUrl.query.name;
   const qBirth = parsedUrl.query.birth;
@@ -168,10 +165,10 @@ const server = http.createServer((req, res) => {
       const m = parseInt(birth.substring(4, 6), 10);
       const d = parseInt(birth.substring(6, 8), 10);
 
-      const r = analyze(name, y, m, d, qTime);
+      const r = analyzeSaju(name, y, m, d, qTime);
       const totalChars = r.saju.hourPillar ? 8 : 6;
 
-      resultHtml = `
+      sajuResultHtml = `
         <div class="result-box">
           <h2>🔮 ${name} 님의 정밀 사주 리포트</h2>
           <div class="summary-line">
@@ -245,7 +242,6 @@ const server = http.createServer((req, res) => {
     }
   }
 
-  // 드롭다운 옵션 HTML 생성
   const timeOptionsHtml = TIME_SLOTS.map(t => {
     const selected = qTime === t.value ? 'selected' : '';
     return `<option value="${t.value}" ${selected}>${t.label}</option>`;
@@ -258,22 +254,46 @@ const server = http.createServer((req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>사주 x 성명학 전문 분석기</title>
+      <title>운명 연구소 - 사주 x 관상</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0f19; color: #f1f5f9; display: flex; justify-content: center; padding: 30px 15px; margin: 0; }
-        .card { background: #151d2f; padding: 28px; border-radius: 18px; width: 100%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid #1e293b; }
-        h1 { font-size: 22px; text-align: center; margin-bottom: 20px; color: #38bdf8; font-weight: 700; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0f19; color: #f1f5f9; display: flex; justify-content: center; padding: 25px 15px; margin: 0; }
+        .card { background: #151d2f; padding: 24px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid #1e293b; }
+        
+        /* 탭 내비게이션 메뉴 */
+        .tab-menu { display: flex; gap: 8px; margin-bottom: 22px; background: #090d16; padding: 5px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: transparent; color: #94a3b8; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: #0284c7; color: #ffffff; box-shadow: 0 4px 12px rgba(2,132,199,0.3); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        h1 { font-size: 20px; text-align: center; margin-bottom: 18px; color: #38bdf8; font-weight: 700; }
         .input-group { margin-bottom: 14px; }
         label { display: block; font-size: 13px; margin-bottom: 5px; color: #94a3b8; font-weight: 600; }
         input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #090d16; color: #fff; box-sizing: border-box; font-size: 15px; }
         input:focus, select:focus { outline: 2px solid #38bdf8; }
-        button { width: 100%; padding: 14px; border-radius: 8px; border: none; background: #0284c7; color: #ffffff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #0369a1; }
-        .result-box { margin-top: 26px; }
+        
+        .btn-primary { width: 100%; padding: 14px; border-radius: 8px; border: none; background: #0284c7; color: #ffffff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-primary:hover { background: #0369a1; }
+        
+        /* 관상 업로드 & 카메라 영역 */
+        .upload-container { border: 2px dashed #334155; border-radius: 12px; padding: 24px 15px; text-align: center; background: #090d16; cursor: pointer; transition: 0.2s; margin-bottom: 14px; }
+        .upload-container:hover { border-color: #38bdf8; }
+        .upload-icon { font-size: 32px; margin-bottom: 8px; }
+        .upload-text { font-size: 14px; color: #cbd5e1; margin-bottom: 4px; }
+        .upload-sub { font-size: 12px; color: #64748b; }
+        #imagePreview { max-width: 100%; max-height: 240px; border-radius: 10px; margin-top: 12px; display: none; margin-left: auto; margin-right: auto; object-fit: cover; }
+        
+        .btn-row { display: flex; gap: 8px; margin-bottom: 14px; }
+        .btn-sub { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .btn-sub:hover { background: #334155; }
+
+        /* 결과 리포트 공통 카드 */
+        .result-box { margin-top: 24px; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .result-box h2 { font-size: 18px; color: #38bdf8; margin: 0 0 12px 0; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
         .summary-line { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 14px; }
         
-        /* 4주 팔자 간지 전광판 UI */
         .pillar-board { display: flex; gap: 8px; margin-bottom: 16px; }
         .pillar-col { flex: 1; background: #090d16; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 4px; text-align: center; }
         .pillar-col.active { border-color: #38bdf8; background: #0c1f36; }
@@ -288,35 +308,238 @@ const server = http.createServer((req, res) => {
         .synergy-highlight { margin-top: 8px !important; color: #38bdf8 !important; }
         .prescription { border-color: #0284c7; background: #0c1e33; }
         .prescription h4 { color: #38bdf8; }
+
+        /* 관상 결과 전용 배지 및 유명인 카드 */
+        .celeb-card { background: #082f49; border: 1px solid #0284c7; padding: 14px; border-radius: 10px; margin-bottom: 12px; text-align: center; }
+        .celeb-title { font-size: 12px; color: #7dd3fc; margin-bottom: 4px; }
+        .celeb-name { font-size: 18px; font-weight: bold; color: #38bdf8; }
+        .celeb-desc { font-size: 13px; color: #e0f2fe; margin-top: 6px; }
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .feature-item { background: #090d16; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; }
+        .feature-item b { font-size: 13px; color: #38bdf8; display: block; margin-bottom: 4px; }
+        .feature-item span { font-size: 12px; color: #94a3b8; }
       </style>
     </head>
     <body>
       <div class="card">
-        <h1>🔮 AI 사주 x 성명학 연구소</h1>
-        <form method="GET">
-          <div class="input-group">
-            <label>이름 (한글)</label>
-            <input type="text" name="name" placeholder="예: 홍길동" required value="${qName || ''}">
+        <!-- 상단 탭 메뉴 -->
+        <div class="tab-menu">
+          <button type="button" class="tab-btn ${sajuResultHtml ? 'active' : (!sajuResultHtml ? 'active' : '')}" id="tabBtnSaju" onclick="switchTab('saju')">📜 사주 x 성명학</button>
+          <button type="button" class="tab-btn" id="tabBtnFace" onclick="switchTab('face')">👁️ AI 관상 분석</button>
+        </div>
+
+        <!-- 1번 탭: 사주 x 성명학 분석 -->
+        <div id="tabSaju" class="tab-content ${sajuResultHtml ? 'active' : (!sajuResultHtml ? 'active' : '')}">
+          <h1>🔮 AI 사주 x 성명학 연구소</h1>
+          <form method="GET">
+            <div class="input-group">
+              <label>이름 (한글)</label>
+              <input type="text" name="name" placeholder="예: 홍길동" required value="${qName || ''}">
+            </div>
+            <div class="input-group">
+              <label>생년월일 8자리</label>
+              <input type="text" name="birth" placeholder="예: 19920924" maxlength="8" required value="${qBirth || ''}">
+            </div>
+            <div class="input-group">
+              <label>태어난 시간 (시주)</label>
+              <select name="time">
+                ${timeOptionsHtml}
+              </select>
+            </div>
+            <button type="submit" class="btn-primary">정밀 4주 8자 분석하기</button>
+          </form>
+          ${sajuResultHtml}
+        </div>
+
+        <!-- 2번 탭: 관상 분석 -->
+        <div id="tabFace" class="tab-content">
+          <h1>👁️ AI 관상 x 닮은꼴 분석</h1>
+          
+          <div class="btn-row">
+            <button type="button" class="btn-sub" onclick="document.getElementById('cameraInput').click()">📸 카메라로 촬영</button>
+            <button type="button" class="btn-sub" onclick="document.getElementById('fileInput').click()">🖼️ 앨범에서 선택</button>
           </div>
-          <div class="input-group">
-            <label>생년월일 8자리</label>
-            <input type="text" name="birth" placeholder="예: 19920924" maxlength="8" required value="${qBirth || ''}">
+
+          <!-- 숨겨진 파일 및 카메라 입력 태그 -->
+          <input type="file" id="cameraInput" accept="image/*" capture="user" style="display:none;" onchange="handleImage(this)">
+          <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleImage(this)">
+
+          <div class="upload-container" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text" id="uploadLabel">정면 얼굴 사진을 찍거나 올려주세요</div>
+            <div class="upload-sub">이마, 눈썹, 코, 턱이 잘 보이는 정면 사진이 좋습니다</div>
+            <img id="imagePreview" alt="얼굴 미리보기">
           </div>
-          <div class="input-group">
-            <label>태어난 시간 (시주)</label>
-            <select name="time">
-              ${timeOptionsHtml}
-            </select>
-          </div>
-          <button type="submit">정밀 4주 8자 분석하기</button>
-        </form>
-        ${resultHtml}
+
+          <button type="button" class="btn-primary" id="btnAnalyzeFace" onclick="runFaceAnalysis()" disabled>관상 & 닮은꼴 분석 시작</button>
+
+          <!-- 관상 분석 결과 렌더링 영역 -->
+          <div id="faceResultArea"></div>
+        </div>
       </div>
+
+      <script>
+        // 탭 전환 기능
+        function switchTab(type) {
+          const tabSaju = document.getElementById('tabSaju');
+          const tabFace = document.getElementById('tabFace');
+          const tabBtnSaju = document.getElementById('tabBtnSaju');
+          const tabBtnFace = document.getElementById('tabBtnFace');
+
+          if (type === 'saju') {
+            tabSaju.classList.add('active');
+            tabFace.classList.remove('active');
+            tabBtnSaju.classList.add('active');
+            tabBtnFace.classList.remove('active');
+          } else {
+            tabSaju.classList.remove('active');
+            tabFace.classList.add('active');
+            tabBtnSaju.classList.remove('active');
+            tabBtnFace.classList.add('active');
+          }
+        }
+
+        // 이미지 파일 처리 및 미리보기
+        let loadedImgElement = null;
+
+        function handleImage(input) {
+          if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const preview = document.getElementById('imagePreview');
+              preview.src = e.target.result;
+              preview.style.display = 'block';
+              document.getElementById('uploadLabel').innerText = '사진이 등록되었습니다. 아래 분석 버튼을 누르세요.';
+              document.getElementById('btnAnalyzeFace').removeAttribute('disabled');
+
+              loadedImgElement = new Image();
+              loadedImgElement.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+          }
+        }
+
+        // 닮은꼴 유명인 및 관상 데이터베이스
+        const CELEB_PROFILES = [
+          {
+            celeb: '유재석 상 (성실 번영형)',
+            type: '청수형(淸秀形) - 총명함과 깊은 신뢰감',
+            desc: '이마에서 턱까지 균형이 단정하며 입매가 다부져 사람들의 마음을 얻고 장기적인 재물운을 모으는 관상입니다.',
+            forehead: '넓고 반듯함 $\\rightarrow$ 뛰어난 순발력과 대중적 소통 능력',
+            eyes: '눈꼬리가 차분함 $\\rightarrow$ 상대를 배려하며 신중한 처세술',
+            nose: '콧날이 곧고 바름 $\\rightarrow$ 정직한 재물 축적과 끈기',
+            mouth: '입꼬리가 단단히 닫힘 $\\rightarrow$ 말실수가 적고 강한 책임감'
+          },
+          {
+            celeb: '이정재 상 (카리스마 대권형)',
+            type: '위맹형(威猛形) - 당당한 기백과 리더십',
+            desc: '눈빛에 중심이 서 있고 하악(턱)이 묵직하여 큰 무대나 조직에서 주도권을 잡고 큰 성공을 거머쥐는 관상입니다.',
+            forehead: '이마 양옆이 시원함 $\\rightarrow$ 명예운과 거침없는 실행력',
+            eyes: '눈빛이 깊고 강함 $\\rightarrow$ 강한 통찰력과 결단력',
+            nose: '콧방울(준두)이 도톰함 $\\rightarrow$ 큰 자금을 굴리는 재물복',
+            mouth: '입술 윤곽이 뚜렷함 $\\rightarrow$ 사람을 이끄는 설득력'
+          },
+          {
+            celeb: '아이유 상 (예술적 귀인형)',
+            type: '수려형(秀麗形) - 풍부한 감수성과 대중 복록',
+            desc: '이목구비의 조화가 부드럽고 눈망울이 맑아 대인 관계에서 귀인의 도움을 끊임없이 불러들이는 관상입니다.',
+            forehead: '이마가 둥글고 깨끗함 $\\rightarrow$ 창의적인 감각과 높은 총명함',
+            eyes: '흑백이 분명한 맑은 눈 $\\rightarrow$ 예술적 감각과 남다른 직관력',
+            nose: '코끝이 단아하고 가지런함 $\\rightarrow$ 실속 있는 재물 관리',
+            mouth: '도톰하고 온화한 입술 $\\rightarrow$ 말 한마디로 복을 짓는 귀인운'
+          },
+          {
+            celeb: '손흥민 상 (돌파 질주형)',
+            type: '용맹형(勇猛形) - 불굴의 의지와 세계적 성취',
+            desc: '눈썹과 눈 사이(전택궁)가 팽팽하며 광대와 턱의 탄력이 뛰어나 시련을 기회로 바꾸고 정상에 오르는 관상입니다.',
+            forehead: '이마 중앙이 솟아오름 $\\rightarrow$ 강한 승부욕과 목표 집념',
+            eyes: '집중력이 넘치는 눈매 $\\rightarrow$ 순간적인 기회를 낚아채는 동물적 감각',
+            nose: '콧대가 굵고 흔들림 없음 $\\rightarrow$ 강인한 체력과 돌파력',
+            mouth: '야무지게 다문 입 $\\rightarrow$ 극한의 훈련과 절제력'
+          }
+        ];
+
+        // 이미지 픽셀/비율 기반 관상 판독
+        function runFaceAnalysis() {
+          if (!loadedImgElement) return;
+
+          const btn = document.getElementById('btnAnalyzeFace');
+          btn.innerText = '인공지능 관상 판독 중...';
+          btn.disabled = true;
+
+          setTimeout(() => {
+            // 이미지 크기와 비율을 바탕으로 시드 생성
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 30;
+            canvas.height = 30;
+            ctx.drawImage(loadedImgElement, 0, 0, 30, 30);
+            
+            const pData = ctx.getImageData(0, 0, 30, 30).data;
+            let sum = 0;
+            for (let i = 0; i < pData.length; i += 4) {
+              sum += pData[i] + pData[i+1] + pData[i+2];
+            }
+
+            const profileIdx = sum % CELEB_PROFILES.length;
+            const p = CELEB_PROFILES[profileIdx];
+
+            const resultHtml = \`
+              <div class="result-box">
+                <h2>👁️ AI 관상 판독 리포트</h2>
+                
+                <div class="celeb-card">
+                  <div class="celeb-title">가장 닮은 관상 유형의 유명인</div>
+                  <div class="celeb-name">\${p.celeb}</div>
+                  <div class="celeb-desc">\${p.type}</div>
+                </div>
+
+                <div class="section-card">
+                  <h4>💡 총평 풀이</h4>
+                  <p>\${p.desc}</p>
+                </div>
+
+                <div class="section-card">
+                  <h4>🔍 부위별 이목구비 정밀 분석</h4>
+                  <div class="feature-grid">
+                    <div class="feature-item">
+                      <b>상정 (이마/눈썹)</b>
+                      <span>\${p.forehead}</span>
+                    </div>
+                    <div class="feature-item">
+                      <b>중정 (눈빛/시선)</b>
+                      <span>\${p.eyes}</span>
+                    </div>
+                    <div class="feature-item">
+                      <b>재백궁 (코/콧망울)</b>
+                      <span>\${p.nose}</span>
+                    </div>
+                    <div class="feature-item">
+                      <b>하정 (입매/턱)</b>
+                      <span>\${p.mouth}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="section-card prescription">
+                  <h4>✨ 관상을 틔우는 개운 팁</h4>
+                  <p>눈썹 사이(명궁)를 늘 깔끔하게 정돈하고, 입꼬리를 살짝 올려 미소를 유지하면 재물과 귀인운이 더욱 강하게 들어옵니다.</p>
+                </div>
+              </div>
+            \`;
+
+            document.getElementById('faceResultArea').innerHTML = resultHtml;
+            btn.innerText = '관상 & 닮은꼴 분석 다시하기';
+            btn.disabled = false;
+          }, 700);
+        }
+      </script>
     </body>
     </html>
   `);
 });
 
-server.listen(3000, () => {
-  console.log('9단계(4주 8자 완성) 서버가 시작되었습니다! 브라우저(http://localhost:3000)를 새로고침하세요.');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`);
 });
