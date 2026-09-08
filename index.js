@@ -279,11 +279,11 @@ const server = http.createServer((req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-      <title>아씨 사주 - 정통 사주 x AI 관상 x 타로점</title>
+      <title>아씨 사주 - 정통 사주 x 관상 x 타로점</title>
       <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif; background: #f1f5f9; color: #1e293b; margin: 0; padding: 0 0 85px 0; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 480px; background: #ffffff; min-height: 100vh; box-shadow: 0 0 25px rgba(0,0,0,0.06); padding: 18px 16px; }
+        .app-container { width: 100%; max-width: 480px; background: #ffffff; min-height: 100vh; box-shadow: 0 0 25px rgba(0,0,0,0.06); padding: 18px 16px; position: relative; }
         
         /* 상단 헤더 */
         .app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid #f1f5f9; margin-bottom: 14px; }
@@ -317,11 +317,13 @@ const server = http.createServer((req, res) => {
         .btn-primary { width: 100%; padding: 15px; border-radius: 14px; border: none; background: #0284c7; color: #ffffff; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 6px; box-shadow: 0 4px 12px rgba(2,132,199,0.25); transition: 0.15s; }
         .btn-primary:active { transform: scale(0.98); }
 
-        /* 하단 고정 5대 네비게이션 바 */
+        /* ============================================== */
+        /* 하단 고정 5대 네비게이션 바 (지정 아이콘 & 명칭) */
+        /* ============================================== */
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; height: 68px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 -4px 16px rgba(0,0,0,0.04); }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 11px; font-weight: 700; gap: 4px; padding: 0; }
         .nav-item.active { color: #0284c7; }
-        .nav-icon { font-size: 20px; }
+        .nav-icon { font-size: 20px; line-height: 1; }
 
         /* 12간지 띠별 카드 */
         .zodiac-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
@@ -381,18 +383,17 @@ const server = http.createServer((req, res) => {
         .price-line b { font-size: 20px; color: #a21caf; }
 
         /* ============================================== */
-        /* 🔮 타로점 1.5배 대형 버튼 & 2초 셔플 스타일 */
+        /* 🔮 타로점 1.5배 대형 버튼 & 2초 셔플 + 중앙 포커스 연출 */
         /* ============================================== */
         .tarot-topic-group { display: flex; gap: 8px; margin-bottom: 16px; }
         .tarot-topic-btn { flex: 1; padding: 16px 6px; border-radius: 14px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #475569; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
         .tarot-topic-btn.active { background: #7c3aed; color: #ffffff; border-color: #7c3aed; box-shadow: 0 4px 14px rgba(124,58,237,0.3); transform: scale(1.02); }
 
-        /* 3x3 그리드 레이아웃 (초기에는 숨김) */
-        .tarot-grid-container { display: none; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; perspective: 1000px; }
+        /* 3x3 그리드 레이아웃 (초기 숨김) */
+        .tarot-grid-container { display: none; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; perspective: 1000px; position: relative; min-height: 280px; }
 
-        .tarot-card-item { width: 100%; aspect-ratio: 2 / 3.2; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .tarot-card-item { width: 100%; aspect-ratio: 2 / 3.2; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease; cursor: pointer; }
         .tarot-card-item:hover { transform: translateY(-5px); }
-        .tarot-card-item.flipped { transform: rotateY(180deg) scale(1.03); }
 
         .card-face { position: absolute; width: 100%; height: 100%; border-radius: 10px; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1.5px solid #e2e8f0; }
         
@@ -407,7 +408,7 @@ const server = http.createServer((req, res) => {
         .front-symbol { font-size: 28px; margin: 2px 0; }
         .front-name { font-size: 10.5px; font-weight: 800; color: #1e293b; line-height: 1.2; }
 
-        /* 2초 리얼 셔플 애니메이션 */
+        /* 2초 셔플 애니메이션 */
         .shuffling .tarot-card-item { animation: shuffleMotion20 2.0s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards; }
         @keyframes shuffleMotion20 {
           0% { transform: scale(1) translate(0, 0) rotate(0deg); }
@@ -416,6 +417,16 @@ const server = http.createServer((req, res) => {
           75% { transform: scale(0.7) translate(-20px, 15px) rotate(-30deg); }
           100% { transform: scale(1) translate(0, 0) rotate(0deg); }
         }
+
+        /* 중앙 포커스 확대 연출 */
+        .tarot-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(4px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; display: flex; align-items: center; justify-content: center; }
+        .tarot-backdrop.active { opacity: 1; pointer-events: auto; }
+
+        .center-showcase-box { width: 165px; height: 264px; position: relative; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 35px rgba(192, 132, 252, 0.8), 0 15px 35px rgba(0,0,0,0.5); border-radius: 14px; }
+        .center-showcase-box.flipped { transform: rotateY(180deg) scale(1.15); }
+        .center-showcase-box .front-num { font-size: 12px; }
+        .center-showcase-box .front-symbol { font-size: 52px; margin: 10px 0; }
+        .center-showcase-box .front-name { font-size: 16px; font-weight: 900; }
 
         .shuffle-status-box { text-align: center; padding: 14px; border-radius: 12px; margin: 10px 0; font-size: 14px; font-weight: 700; transition: 0.3s; }
         .status-ready { background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; }
@@ -433,7 +444,7 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 1. ☀️ 오늘의 운세 -->
+        <!-- 1. ☀️ 오늘의 운세 (원숭이 아이콘) -->
         <!-- ============================================== -->
         <div id="tabToday" class="tab-content active">
           <div class="hero-banner">
@@ -464,10 +475,10 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 2. 📜 정밀 사주 x 성명학 -->
+        <!-- 2. 📜 정밀 사주 x 성명학 (책 아이콘) -->
         <!-- ============================================== -->
         <div id="tabSaju" class="tab-content">
-          <h2 style="font-size:18px; font-weight:800; margin-bottom:14px; color:#0f172a;">📜 정통 사주 x 성명학 분석</h2>
+          <h2 style="font-size:18px; font-weight:800; margin-bottom:14px; color:#0f172a;">📖 정통 사주 x 성명학 분석</h2>
           
           <div class="form-card">
             <div class="input-group">
@@ -501,10 +512,10 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 3. 👁️ AI 관상 분석 -->
+        <!-- 3. 🧑 관상 분석 (사람 아이콘 & 이름 '관상') -->
         <!-- ============================================== -->
         <div id="tabFace" class="tab-content">
-          <h2 style="font-size:18px; font-weight:800; margin-bottom:14px; color:#0f172a;">👁️ AI 관상 x 닮은꼴 분석</h2>
+          <h2 style="font-size:18px; font-weight:800; margin-bottom:14px; color:#0f172a;">🧑 관상 x 닮은꼴 분석</h2>
           
           <div class="form-card">
             <div style="display:flex; gap:8px; margin-bottom:12px;">
@@ -529,7 +540,7 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 4. 🔮 사주+관상 올인원 프리미엄 결합 메뉴 -->
+        <!-- 4. 🔮 사주+관상 올인원 프리미엄 결합 메뉴 (책 읽는 사람 아이콘) -->
         <!-- ============================================== -->
         <div id="tabCross" class="tab-content">
           <div class="premium-hero">
@@ -592,7 +603,7 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 5. 🔮 타로점 탭 (셔플 시 카드 등장 & 2초 애니메이션) -->
+        <!-- 5. 🔮 타로점 탭 (화려한 2초 중앙 확대 연출 탑재) -->
         <!-- ============================================== -->
         <div id="tabTarot" class="tab-content">
           <div style="background:linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border:1px solid #c4b5fd; border-radius:18px; padding:16px; margin-bottom:14px;">
@@ -616,8 +627,24 @@ const server = http.createServer((req, res) => {
           <div class="shuffle-status-box status-shuffling" id="statusShuffling">✨ 운명의 카드를 정성껏 셔플하는 중입니다...</div>
           <div class="shuffle-status-box status-done" id="statusDone">✅ 셔플 완료! 9장의 카드 중 마음이 이끄는 1장을 선택하세요.</div>
 
-          <!-- 3x3 카드 그리드 (셔플 전에는 완전 숨김) -->
+          <!-- 3x3 카드 그리드 (초기 숨김) -->
           <div class="tarot-grid-container" id="tarotDeckBox"></div>
+
+          <!-- 2초 중앙 포커스 쇼케이스 백드롭 -->
+          <div class="tarot-backdrop" id="tarotBackdrop">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:14px;">
+              <div class="center-showcase-box" id="centerShowcaseCard">
+                <div class="card-face card-back">
+                  <div class="back-pattern">
+                    <span class="back-rune">🔮</span>
+                    <span style="font-size:11px; font-weight:800; margin-top:4px;">TAROT</span>
+                  </div>
+                </div>
+                <div class="card-face card-front" id="centerCardFront"></div>
+              </div>
+              <div style="color:#ffffff; font-size:14px; font-weight:800; text-shadow:0 2px 8px rgba(0,0,0,0.6);">✨ 당신이 선택한 운명의 카드입니다 ✨</div>
+            </div>
+          </div>
 
           <!-- 타로점 결과 리포트 출력 영역 -->
           <div id="tarotResultArea"></div>
@@ -625,26 +652,28 @@ const server = http.createServer((req, res) => {
 
       </div>
 
-      <!-- 하단 고정 5대 네비게이션 바 -->
+      <!-- ============================================== -->
+      <!-- 하단 고정 5대 네비게이션 바 (지정 아이콘 & 명칭 적용) -->
+      <!-- ============================================== -->
       <nav class="bottom-nav">
         <button type="button" class="nav-item active" id="navToday" onclick="switchNav('today')">
-          <span class="nav-icon">☀️</span>
+          <span class="nav-icon">🐵</span>
           <span>오늘운세</span>
         </button>
         <button type="button" class="nav-item" id="navSaju" onclick="switchNav('saju')">
-          <span class="nav-icon">📜</span>
+          <span class="nav-icon">📖</span>
           <span>정밀사주</span>
         </button>
         <button type="button" class="nav-item" id="navFace" onclick="switchNav('face')">
-          <span class="nav-icon">👁️</span>
-          <span>AI관상</span>
+          <span class="nav-icon">🧑</span>
+          <span>관상</span>
         </button>
         <button type="button" class="nav-item" id="navCross" onclick="switchNav('cross')">
-          <span class="nav-icon">🔮</span>
+          <span class="nav-icon">📖🧑</span>
           <span>사주+관상</span>
         </button>
         <button type="button" class="nav-item" id="navTarot" onclick="switchNav('tarot')">
-          <span class="nav-icon">🔮</span>
+          <span class="nav-icon">🎴</span>
           <span>타로점</span>
         </button>
       </nav>
@@ -1201,7 +1230,7 @@ const server = http.createServer((req, res) => {
           const html = \`
             <div class="result-box">
               <div class="res-badge">관상 무료 기본 요약</div>
-              <h2 class="res-title">👁️ 닮은꼴 관상: \${p.celeb}</h2>
+              <h2 class="res-title">🧑 닮은꼴 관상: \${p.celeb}</h2>
 
               <div class="section-card">
                 <h4>💡 총평 풀이</h4>
@@ -1295,7 +1324,7 @@ const server = http.createServer((req, res) => {
               </div>
 
               <div class="section-card">
-                <h4>👁️ [2단계] 관상 이목구비 정밀 스캔</h4>
+                <h4>🧑 [2단계] 관상 이목구비 정밀 스캔</h4>
                 <p style="font-size:13.5px; color:#475569; line-height:1.5;">\${p.desc}</p>
                 <div style="background:#ffffff; padding:8px; border-radius:8px; border:1px solid #e2e8f0; font-size:12.5px; margin-top:6px; color:#64748b;">
                   • <b>이마:</b> \${p.forehead} | • <b>코:</b> \${p.nose} | • <b>입:</b> \${p.mouth}
@@ -1349,7 +1378,7 @@ const server = http.createServer((req, res) => {
         }
 
         // ==============================================
-        // 🔮 5번 탭: 타로점 (셔플 시 카드 등장 & 2초 애니메이션)
+        // 🔮 5번 탭: 타로점 (2초 셔플 + 2초 중앙 확대 쇼케이스)
         // ==============================================
         let currentTarotTopic = 'money';
         let isTarotFlipped = false;
@@ -1365,7 +1394,6 @@ const server = http.createServer((req, res) => {
           resetTarotDeck();
         }
 
-        // 3x3 카드 HTML 생성 함수
         function renderTarotDeck() {
           const box = document.getElementById('tarotDeckBox');
           if (!box) return;
@@ -1386,28 +1414,28 @@ const server = http.createServer((req, res) => {
           box.innerHTML = cardsHtml;
         }
 
-        // 초기 상태: 카드 숨김
         function resetTarotDeck() {
           isTarotFlipped = false;
           isShufflingNow = false;
           const box = document.getElementById('tarotDeckBox');
           if (box) {
-            box.style.display = 'none'; // 카드 숨김
+            box.style.display = 'none';
             box.innerHTML = '';
           }
           document.getElementById('tarotResultArea').innerHTML = '';
+          document.getElementById('tarotBackdrop').classList.remove('active');
           
           document.getElementById('statusReady').style.display = 'block';
           document.getElementById('statusShuffling').style.display = 'none';
           document.getElementById('statusDone').style.display = 'none';
         }
 
-        // 2초 셔플 모션 트리거 (이때 카드가 등장)
         function triggerShuffle() {
           if (isShufflingNow) return;
           isShufflingNow = true;
           isTarotFlipped = false;
           document.getElementById('tarotResultArea').innerHTML = '';
+          document.getElementById('tarotBackdrop').classList.remove('active');
 
           const box = document.getElementById('tarotDeckBox');
           const btn = document.getElementById('btnShuffle');
@@ -1420,12 +1448,10 @@ const server = http.createServer((req, res) => {
           statusDone.style.display = 'none';
           statusShuffling.style.display = 'block';
 
-          // 카드 렌더링 후 화면에 등장
           renderTarotDeck();
           box.style.display = 'grid';
           box.classList.add('shuffling');
 
-          // 정확히 2초(2000ms) 동안 셔플 진행
           setTimeout(() => {
             box.classList.remove('shuffling');
             statusShuffling.style.display = 'none';
@@ -1435,26 +1461,49 @@ const server = http.createServer((req, res) => {
           }, 2000);
         }
 
-        // 9장 중 1장 터치하여 뽑기
+        // 9장 중 1장 터치 -> 중앙 1.3배 확대 + 2초 홀딩 후 리포트로 스크롤
         function drawTarotCard(clickedIdx) {
           if (isShufflingNow || isTarotFlipped) return;
           isTarotFlipped = true;
 
-          // 22장 메이저 아르카나 중 무작위 1장 선정
           const randomIdx = Math.floor(Math.random() * TAROT_MASTER.length);
           const t = TAROT_MASTER[randomIdx];
 
-          const cardFront = document.getElementById('cardFront' + clickedIdx);
-          cardFront.innerHTML = \`
+          // 1단계: 나머지 8장 카드 페이드아웃
+          const allCards = document.querySelectorAll('.tarot-card-item');
+          allCards.forEach((c, idx) => {
+            if (idx !== clickedIdx) {
+              c.style.opacity = '0';
+              c.style.pointerEvents = 'none';
+            }
+          });
+
+          // 2단계: 중앙 쇼케이스 모달 활성화 및 카드 앞면 채우기
+          const centerFront = document.getElementById('centerCardFront');
+          centerFront.innerHTML = \`
             <div class="front-num">\${t.roman}</div>
             <div class="front-symbol">\${t.emoji}</div>
             <div class="front-name">\${t.name}</div>
           \`;
 
-          const cardItem = document.getElementById('tarotCard' + clickedIdx);
-          cardItem.classList.add('flipped');
-
+          const centerBox = document.getElementById('centerShowcaseCard');
+          const backdrop = document.getElementById('tarotBackdrop');
+          
+          backdrop.classList.add('active');
           setTimeout(() => {
+            centerBox.classList.add('flipped');
+          }, 50);
+
+          // 3단계: 중앙에서 정확히 2초간 보여준 뒤 스크롤 및 리포트 공개
+          setTimeout(() => {
+            backdrop.classList.remove('active');
+            centerBox.classList.remove('flipped');
+
+            // 그리드의 카드도 앞면으로 고정
+            const cardFront = document.getElementById('cardFront' + clickedIdx);
+            cardFront.innerHTML = centerFront.innerHTML;
+            document.getElementById('tarotCard' + clickedIdx).style.transform = 'rotateY(180deg)';
+
             let topicText = '';
             let topicSummary = '';
             if (currentTarotTopic === 'money') {
@@ -1518,10 +1567,9 @@ const server = http.createServer((req, res) => {
 
             document.getElementById('tarotResultArea').innerHTML = html;
             document.getElementById('tarotResultArea').scrollIntoView({ behavior: 'smooth' });
-          }, 600);
+          }, 2000);
         }
 
-        // 첫 진입 시 초기화 (카드 숨김 유지)
         resetTarotDeck();
       </script>
     </body>
