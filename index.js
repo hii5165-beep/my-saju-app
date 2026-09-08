@@ -279,7 +279,7 @@ const server = http.createServer((req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-      <title>운명 포털 - 사주 x 관상 x 타로점</title>
+      <title>아씨 사주 - 정통 사주 x AI 관상 x 타로점</title>
       <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif; background: #f1f5f9; color: #1e293b; margin: 0; padding: 0 0 85px 0; display: flex; justify-content: center; }
@@ -287,7 +287,7 @@ const server = http.createServer((req, res) => {
         
         /* 상단 헤더 */
         .app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid #f1f5f9; margin-bottom: 14px; }
-        .app-logo { font-size: 20px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; }
+        .app-logo { font-size: 21px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; }
         .app-logo span { color: #0284c7; }
         .header-date { font-size: 13px; color: #64748b; font-weight: 700; background: #f8fafc; padding: 4px 10px; border-radius: 20px; border: 1px solid #e2e8f0; }
 
@@ -317,7 +317,7 @@ const server = http.createServer((req, res) => {
         .btn-primary { width: 100%; padding: 15px; border-radius: 14px; border: none; background: #0284c7; color: #ffffff; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 6px; box-shadow: 0 4px 12px rgba(2,132,199,0.25); transition: 0.15s; }
         .btn-primary:active { transform: scale(0.98); }
 
-        /* 하단 고정 5대 네비게이션 바 (점신 스타일) */
+        /* 하단 고정 5대 네비게이션 바 */
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; height: 68px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 -4px 16px rgba(0,0,0,0.04); }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 11px; font-weight: 700; gap: 4px; padding: 0; }
         .nav-item.active { color: #0284c7; }
@@ -381,17 +381,20 @@ const server = http.createServer((req, res) => {
         .price-line b { font-size: 20px; color: #a21caf; }
 
         /* ============================================== */
-        /* 🃏 타로점 3x3 그리드 & 셔플 애니메이션 스타일 */
+        /* 🔮 타로점 1.5배 대형 버튼 & 2.5초 셔플 스타일 */
         /* ============================================== */
-        .tarot-topic-group { display: flex; gap: 6px; margin-bottom: 14px; }
-        .tarot-topic-btn { flex: 1; padding: 11px 4px; border-radius: 12px; border: 1px solid #cbd5e1; background: #ffffff; color: #64748b; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .tarot-topic-btn.active { background: #7c3aed; color: #ffffff; border-color: #7c3aed; box-shadow: 0 4px 12px rgba(124,58,237,0.25); }
+        .tarot-topic-group { display: flex; gap: 8px; margin-bottom: 16px; }
+        /* 1.5배 확대된 큼직한 테마 버튼 */
+        .tarot-topic-btn { flex: 1; padding: 16px 6px; border-radius: 14px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #475569; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+        .tarot-topic-btn.active { background: #7c3aed; color: #ffffff; border-color: #7c3aed; box-shadow: 0 4px 14px rgba(124,58,237,0.3); transform: scale(1.02); }
 
         /* 3x3 그리드 레이아웃 */
-        .tarot-grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; perspective: 1000px; }
+        .tarot-grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; perspective: 1000px; }
 
-        .tarot-card-item { width: 100%; aspect-ratio: 2 / 3.2; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
-        .tarot-card-item:hover { transform: translateY(-4px); }
+        .tarot-card-item { width: 100%; aspect-ratio: 2 / 3.2; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; cursor: pointer; }
+        .tarot-card-item.locked { cursor: not-allowed; opacity: 0.85; }
+        .tarot-card-item.locked:hover { transform: none; }
+        .tarot-card-item:not(.locked):hover { transform: translateY(-5px); }
         .tarot-card-item.flipped { transform: rotateY(180deg) scale(1.03); }
 
         .card-face { position: absolute; width: 100%; height: 100%; border-radius: 10px; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1.5px solid #e2e8f0; }
@@ -407,17 +410,21 @@ const server = http.createServer((req, res) => {
         .front-symbol { font-size: 28px; margin: 2px 0; }
         .front-name { font-size: 10.5px; font-weight: 800; color: #1e293b; line-height: 1.2; }
 
-        /* 셔플 애니메이션 상태 */
-        .shuffling .tarot-card-item { animation: shuffleMotion 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        @keyframes shuffleMotion {
-          0% { transform: scale(1) translate(0, 0); }
-          30% { transform: scale(0.7) translate(0, 0) rotate(-15deg); }
-          60% { transform: scale(0.8) translate(15px, -10px) rotate(20deg); }
-          85% { transform: scale(0.9) translate(-10px, 5px) rotate(-8deg); }
+        /* 2.5초 리얼 입체 셔플 애니메이션 */
+        .shuffling .tarot-card-item { animation: shuffleMotion25 2.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards; }
+        @keyframes shuffleMotion25 {
+          0% { transform: scale(1) translate(0, 0) rotate(0deg); }
+          20% { transform: scale(0.65) translate(0, 0) rotate(-25deg); }
+          40% { transform: scale(0.75) translate(25px, -15px) rotate(35deg); }
+          60% { transform: scale(0.7) translate(-25px, 15px) rotate(-30deg); }
+          80% { transform: scale(0.85) translate(10px, -5px) rotate(15deg); }
           100% { transform: scale(1) translate(0, 0) rotate(0deg); }
         }
 
-        .shuffle-loading-bar { display: none; text-align: center; padding: 12px; background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 12px; margin: 10px 0; color: #6d28d9; font-weight: 700; font-size: 13px; }
+        .shuffle-status-box { text-align: center; padding: 13px; border-radius: 12px; margin: 10px 0; font-size: 13.5px; font-weight: 700; transition: 0.3s; }
+        .status-ready { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+        .status-shuffling { background: #faf5ff; border: 1px solid #e9d5ff; color: #7c3aed; display: none; }
+        .status-done { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; display: none; }
       </style>
     </head>
     <body>
@@ -425,7 +432,7 @@ const server = http.createServer((req, res) => {
         
         <!-- 상단 헤더 -->
         <div class="app-header">
-          <div class="app-logo">운명<span>포털</span></div>
+          <div class="app-logo">아씨<span>사주</span></div>
           <div class="header-date">📅 ${kstDateLabel}</div>
         </div>
 
@@ -532,7 +539,7 @@ const server = http.createServer((req, res) => {
           <div class="premium-hero">
             <span class="premium-badge">👑 최고 인기 올인원 결합 패키지</span>
             <h2 style="font-size:20px; font-weight:900; color:#701a75; margin:6px 0;">🔮 사주 x 관상 융합 종합 비책</h2>
-            <p style="font-size:13.5px; color:#86198f; line-height:1.5;">사주 원국(선천운)의 빈틈을 얼굴 관상(후천운)이 어떻게 보완하는지 한 화면에서 입체 분석하는 독점 프리미엄 리포트입니다.</p>
+            <p style="font-size:13.5px; color:#86198f; line-height:1.5;">사주 원국(선천운)의 빈틈을 얼굴 관상(후천운)이 어떻게 보완하는지 한 화면에서 입체 분석하는 아씨 사주 독점 프리미엄 리포트입니다.</p>
             <div class="price-line">
               <s>단품가 5,800원</s> $\rightarrow$ <b>특별 할인가 3,400원 (테스트 무료)</b>
             </div>
@@ -589,7 +596,7 @@ const server = http.createServer((req, res) => {
         </div>
 
         <!-- ============================================== -->
-        <!-- 5. 🔮 타로점 탭 (3x3 그리드 + 셔플 애니메이션 완성) -->
+        <!-- 5. 🔮 타로점 탭 (1.5배 메뉴 + 2.5초 셔플 후 선택) -->
         <!-- ============================================== -->
         <div id="tabTarot" class="tab-content">
           <div style="background:linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border:1px solid #c4b5fd; border-radius:18px; padding:16px; margin-bottom:14px;">
@@ -598,7 +605,7 @@ const server = http.createServer((req, res) => {
             <p style="font-size:13.5px; color:#6d28d9; font-weight:700; margin:4px 0 0 0;">9장의 카드 중 한 가지를 선택해 주세요.</p>
           </div>
 
-          <!-- 주제 선택 버튼 -->
+          <!-- 1.5배 확대된 시원한 주제 선택 버튼 -->
           <div class="tarot-topic-group">
             <button type="button" class="tarot-topic-btn active" id="topicMoney" onclick="selectTarotTopic('money')">💰 금전·이직</button>
             <button type="button" class="tarot-topic-btn" id="topicLove" onclick="selectTarotTopic('love')">❤️ 연애·재회</button>
@@ -606,11 +613,14 @@ const server = http.createServer((req, res) => {
           </div>
 
           <!-- 셔플 시작 버튼 -->
-          <button type="button" class="btn-primary" id="btnShuffle" style="background:#7c3aed; margin-top:0; margin-bottom:10px; font-size:15px;" onclick="triggerShuffle()">🔀 운명의 카드 셔플하기</button>
+          <button type="button" class="btn-primary" id="btnShuffle" style="background:#7c3aed; margin-top:0; margin-bottom:10px; font-size:16px; padding:16px;" onclick="triggerShuffle()">🔀 운명의 카드 셔플하기</button>
           
-          <div class="shuffle-loading-bar" id="shuffleLoading">✨ 운명의 카드를 정성껏 셔플하는 중...</div>
+          <!-- 상태 안내 바 -->
+          <div class="shuffle-status-box status-ready" id="statusReady">⚠️ 먼저 위의 [운명의 카드 셔플하기]를 눌러 카드를 섞어주세요!</div>
+          <div class="shuffle-status-box status-shuffling" id="statusShuffling">✨ 운명의 카드를 정성껏 셔플하는 중입니다... (2.5초)</div>
+          <div class="shuffle-status-box status-done" id="statusDone">✅ 셔플 완료! 마음이 가장 강하게 끌리는 카드 1장을 터치하세요.</div>
 
-          <!-- 3x3 (가로 3장 x 세로 3장) 카드 그리드 -->
+          <!-- 3x3 (가로 3장 x 세로 3장) 카드 그리드 (셔플 전 잠금) -->
           <div class="tarot-grid-container" id="tarotDeckBox">
             <!-- JS로 9장의 3x3 카드 렌더링 -->
           </div>
@@ -943,7 +953,7 @@ const server = http.createServer((req, res) => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 성별 선택 버튼 제어
+        // 성별 선택 제어
         function selectGender(prefix, gender) {
           const maleBtn = document.getElementById(prefix + 'MaleBtn');
           const femaleBtn = document.getElementById(prefix + 'FemaleBtn');
@@ -959,7 +969,7 @@ const server = http.createServer((req, res) => {
           }
         }
 
-        // 토글 버튼 제어
+        // 토글 제어
         function togglePlus(boxId, btn) {
           const box = document.getElementById(boxId);
           if (box.style.display === 'none' || box.style.display === '') {
@@ -1345,11 +1355,12 @@ const server = http.createServer((req, res) => {
         }
 
         // ==============================================
-        // 🔮 5번 탭: 타로점 3x3 그리드 + 셔플 엔진
+        // 🔮 5번 탭: 타로점 1.5배 메뉴 & 2.5초 셔플 엔진
         // ==============================================
         let currentTarotTopic = 'money';
         let isTarotFlipped = false;
         let isShufflingNow = false;
+        let isShuffleDone = false; // 셔플 완료 여부 플래그
 
         function selectTarotTopic(topic) {
           currentTarotTopic = topic;
@@ -1367,8 +1378,9 @@ const server = http.createServer((req, res) => {
           if (!box) return;
           let cardsHtml = '';
           for (let i = 0; i < 9; i++) {
+            const lockedClass = isShuffleDone ? '' : 'locked';
             cardsHtml += \`
-              <div class="tarot-card-item" id="tarotCard\${i}" onclick="drawTarotCard(\${i})">
+              <div class="tarot-card-item \${lockedClass}" id="tarotCard\${i}" onclick="drawTarotCard(\${i})">
                 <div class="card-face card-back">
                   <div class="back-pattern">
                     <span class="back-rune">🔮</span>
@@ -1384,36 +1396,58 @@ const server = http.createServer((req, res) => {
 
         function resetTarotDeck() {
           isTarotFlipped = false;
+          isShuffleDone = false;
           renderTarotDeck();
           document.getElementById('tarotResultArea').innerHTML = '';
+          
+          document.getElementById('statusReady').style.display = 'block';
+          document.getElementById('statusShuffling').style.display = 'none';
+          document.getElementById('statusDone').style.display = 'none';
         }
 
-        // 카드 셔플 모션 트리거
+        // 2.5초 리얼 카드 셔플 트리거
         function triggerShuffle() {
           if (isShufflingNow) return;
           isShufflingNow = true;
           isTarotFlipped = false;
+          isShuffleDone = false;
           document.getElementById('tarotResultArea').innerHTML = '';
 
           const box = document.getElementById('tarotDeckBox');
-          const loading = document.getElementById('shuffleLoading');
           const btn = document.getElementById('btnShuffle');
+          const statusReady = document.getElementById('statusReady');
+          const statusShuffling = document.getElementById('statusShuffling');
+          const statusDone = document.getElementById('statusDone');
 
           btn.disabled = true;
-          loading.style.display = 'block';
+          statusReady.style.display = 'none';
+          statusDone.style.display = 'none';
+          statusShuffling.style.display = 'block';
+
           renderTarotDeck();
           box.classList.add('shuffling');
 
+          // 정확히 2.5초(2500ms) 동안 셔플 진행
           setTimeout(() => {
             box.classList.remove('shuffling');
-            loading.style.display = 'none';
+            statusShuffling.style.display = 'none';
+            statusDone.style.display = 'block';
             btn.disabled = false;
             isShufflingNow = false;
-          }, 1200);
+            isShuffleDone = true; // 잠금 해제
+
+            // 카드 아이템 잠금 클래스 해제
+            const cards = document.querySelectorAll('.tarot-card-item');
+            cards.forEach(c => c.classList.remove('locked'));
+          }, 2500);
         }
 
-        // 9장 중 1장 터치하여 뽑기
+        // 9장 중 1장 터치하여 뽑기 (셔플 완료 전 클릭 차단)
         function drawTarotCard(clickedIdx) {
+          if (!isShuffleDone) {
+            alert('위의 [운명의 카드 셔플하기] 버튼을 먼저 눌러 카드를 섞어주세요!');
+            return;
+          }
           if (isTarotFlipped || isShufflingNow) return;
           isTarotFlipped = true;
 
@@ -1508,5 +1542,5 @@ const server = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`서버가 포트 ${PORT}에서 정상 실행 중입니다.`);
+  console.log(`아씨 사주 서버가 포트 ${PORT}에서 정상 실행 중입니다.`);
 });
