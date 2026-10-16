@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shorts Automation Control Tower</title>
+  <meta name="description" content="숏츠 제작 6단계를 단계별로 점검하는 관제 화면">
+  <meta name="theme-color" content="#0d1a22">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-text">
+          <h1>Shorts Automation Control Tower</h1>
+          <p class="subtitle">REUSABLE WORKSPACE</p>
+        </div>
+      </div>
+      <p id="readyCount" class="ready-count">0 / 6 단계 완료</p>
+    </header>
+
+    <div id="errorBanner" class="error-banner" role="alert" hidden>
+      <p id="errorText"></p>
+      <button type="button" id="errorClose" class="ghost-btn">닫기</button>
+    </div>
+
+    <main id="layout" class="layout">
+      <aside class="panel tree-panel" aria-labelledby="treeTitle">
+        <h2 id="treeTitle" class="panel-label">PROJECT TREE</h2>
+        <ul id="tree" class="tree"></ul>
+
+        <div id="fileInfo" class="file-info" aria-live="polite"></div>
+
+        <section class="side-section" aria-labelledby="connTitle">
+          <h3 id="connTitle" class="panel-label">연결 상태</h3>
+          <ul id="connections" class="conn-list"></ul>
+          <p class="hint">이 화면은 외부 도구를 직접 제어하지 않습니다. 실제로 확인된 연결만 "확인됨"으로 표시합니다.</p>
+        </section>
+
+        <section class="side-section" aria-labelledby="folderTitle">
+          <h3 id="folderTitle" class="panel-label">작업 폴더 확인</h3>
+          <label class="file-pick">
+            작업 폴더 선택
+            <input id="folderInput" type="file" webkitdirectory multiple>
+          </label>
+          <p id="folderStatus" class="hint">선택 전: 모든 파일 경로가 미확인 상태입니다.</p>
+        </section>
+      </aside>
+
+      <section class="panel pipeline-panel" aria-labelledby="pipelineTitle">
+        <div class="section-head">
+          <h2 id="pipelineTitle">전체 파이프라인</h2>
+          <span>6 STEPS</span>
+        </div>
+        <ol id="pipeline" class="pipeline"></ol>
+      </section>
+
+      <section class="panel detail-panel" aria-labelledby="detailTitle">
+        <div class="section-head">
+          <h2 id="detailTitle">단계별 상세 검수</h2>
+          <span id="detailCount">0 / 6 READY</span>
+        </div>
+        <div id="cards" class="cards"></div>
+      </section>
+
+      <svg id="connector" class="connector" aria-hidden="true"></svg>
+    </main>
+  </div>
+
+  <dialog id="detailDialog" class="dialog" aria-labelledby="dialogTitle">
+    <div class="dialog-inner">
+      <header class="dialog-head">
+        <div>
+          <p id="dialogKicker" class="dialog-kicker"></p>
+          <h2 id="dialogTitle"></h2>
+        </div>
+        <button type="button" class="icon-btn" data-close aria-label="닫기">✕</button>
+      </header>
+
+      <p id="dialogSummary" class="dialog-summary"></p>
+      <p id="dialogProgress" class="dialog-progress"></p>
+      <p id="dialogNote" class="card-note" hidden></p>
+
+      <section class="dialog-section">
+        <h3 class="panel-label">검수 체크리스트</h3>
+        <ul id="dialogChecklist" class="checklist"></ul>
+        <p class="hint">체크는 사용자가 직접 확인한 내용만 반영합니다. 이 화면이 결과물을 자동으로 검사하지 않습니다.</p>
+      </section>
+
+      <section class="dialog-section">
+        <h3 class="panel-label">파일 경로</h3>
+        <ul id="dialogFiles" class="dialog-files"></ul>
+      </section>
+
+      <section class="dialog-section">
+        <h3 class="panel-label">오류가 나면 확인할 것</h3>
+        <ul id="dialogErrors" class="error-guide"></ul>
+      </section>
+
+      <footer class="dialog-foot">
+        <button type="button" class="primary-btn" data-close>닫기</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
