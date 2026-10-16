@@ -1,0 +1,1643 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shorts Automation Control Tower</title>
+  <meta name="description" content="숏츠 제작 6단계를 단계별로 점검하는 관제 화면">
+  <meta name="theme-color" content="#0d1a22">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%20%20%3Cdefs%3E%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f0b765%22/%3E%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23d9822f%22/%3E%20%20%20%20%3C/linearGradient%3E%20%20%3C/defs%3E%20%20%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22%230d1a22%22/%3E%20%20%3Crect%20x%3D%2296%22%20y%3D%2296%22%20width%3D%22320%22%20height%3D%22320%22%20rx%3D%2272%22%20fill%3D%22url%28%23g%29%22/%3E%20%20%3Cpath%20d%3D%22M190%20292%20L330%20292%20L312%20220%20L172%20220%20Z%22%20fill%3D%22%231b2730%22%20transform%3D%22skewX%28-10%29%22%20transform-origin%3D%22256%20256%22/%3E%3C/svg%3E" type="image/svg+xml">
+  <style>
+:root {
+  color-scheme: dark;
+  --bg: #0d1a22;
+  --bg-deep: #08121a;
+  --panel: #14242d;
+  --panel-2: #1a2f3a;
+  --line: #2b4350;
+  --line-soft: #213843;
+  --text: #eef3f5;
+  --muted: #94a8b2;
+  --gold: #e3a857;
+  --orange: #e0823a;
+  --ok: #7fd3a8;
+  --warn: #e7c46e;
+  --err: #ef8a86;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(900px 500px at 8% -10%, #1b3d43 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+  color: var(--text);
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* 상단 바 */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(10, 22, 29, 0.85);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.brand-mark {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0b765, #d9822f);
+  box-shadow: 0 6px 18px rgba(224, 130, 58, 0.25);
+  display: grid;
+  place-items: center;
+}
+
+.brand-mark::before {
+  content: "";
+  width: 20px;
+  height: 8px;
+  border-radius: 2px;
+  background: #1b2730;
+  transform: skewX(-20deg);
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.ready-count {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ok);
+  white-space: nowrap;
+}
+
+/* 오류 안내 */
+.error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 24px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 138, 134, 0.5);
+  background: rgba(239, 138, 134, 0.1);
+  color: #ffd6d4;
+  font-size: 13px;
+}
+
+.error-banner.warn {
+  border-color: rgba(231, 196, 110, 0.5);
+  background: rgba(231, 196, 110, 0.1);
+  color: #f6e6b3;
+}
+
+.error-banner p {
+  margin: 0;
+}
+
+.ghost-btn {
+  flex: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* 3단 레이아웃 */
+.layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: 250px minmax(260px, 1fr) minmax(300px, 1.15fr);
+  gap: 24px;
+  padding: 20px 24px 40px;
+  align-items: start;
+}
+
+.panel {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--panel), #112029);
+}
+
+.panel-label {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.section-head span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--ok);
+  white-space: nowrap;
+}
+
+/* 프로젝트 트리 */
+.tree,
+.tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tree ul {
+  margin: 2px 0 2px 8px;
+  padding-left: 14px;
+  border-left: 1px solid var(--line-soft);
+}
+
+.tree-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tree-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tree-btn[aria-current="true"] {
+  background: var(--panel-2);
+  border-color: var(--gold);
+}
+
+.tree-btn .caret {
+  width: 10px;
+  font-size: 10px;
+  color: var(--gold);
+  transition: transform 0.15s;
+}
+
+.tree-btn[aria-expanded="false"] .caret {
+  transform: rotate(-90deg);
+}
+
+.tree-btn .dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.tree-btn .dot.found {
+  background: var(--ok);
+}
+
+.tree-btn .dot.missing {
+  background: var(--err);
+}
+
+.tree-btn .tag {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.file-info {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(8, 18, 26, 0.55);
+  font-size: 13px;
+}
+
+.file-info strong {
+  display: block;
+  margin-bottom: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.file-info p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+}
+
+/* 연결 상태 · 폴더 확인 */
+.side-section {
+  margin-top: 22px;
+}
+
+.conn-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.conn-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.conn-list strong {
+  display: block;
+  font-weight: 600;
+}
+
+.conn-note {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.state {
+  flex: none;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.state.on {
+  color: var(--ok);
+  border-color: rgba(127, 211, 168, 0.5);
+}
+
+.state.wait {
+  color: var(--gold);
+  border-color: rgba(227, 168, 87, 0.5);
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.file-pick {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 14px;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.file-pick:hover {
+  background: rgba(227, 168, 87, 0.12);
+}
+
+.file-pick:focus-within {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.file-pick input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 파이프라인 */
+.pipeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.pipeline li {
+  position: relative;
+}
+
+.pipeline li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 27px;
+  top: 100%;
+  width: 2px;
+  height: 14px;
+  background: linear-gradient(180deg, var(--gold), var(--orange));
+}
+
+.node {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel-2);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.node:hover {
+  border-color: var(--gold);
+  transform: translateX(2px);
+}
+
+.node.is-selected {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px rgba(227, 168, 87, 0.35);
+}
+
+.node-num,
+.card-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  background: rgba(227, 168, 87, 0.08);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.node-num {
+  width: 44px;
+  height: 44px;
+}
+
+.node.done .node-num,
+.card.done .card-badge {
+  border-color: var(--ok);
+  background: rgba(47, 123, 122, 0.55);
+  color: #eafff4;
+}
+
+.node.doing .node-num,
+.card.doing .card-badge {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.node-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.node-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.node-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.bar {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--orange));
+  transition: width 0.2s;
+}
+
+.node.done .bar span,
+.card.done .bar span {
+  background: var(--ok);
+}
+
+/* 상세 검수 카드 */
+.cards {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+}
+
+.card.is-selected {
+  border-color: var(--gold);
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.card-badge {
+  width: 44px;
+  height: 44px;
+  font-size: 15px;
+  background: rgba(10, 22, 29, 0.6);
+}
+
+.card h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.card-summary {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.card-meta {
+  margin: 8px 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.card-note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--warn);
+}
+
+.card-files,
+.dialog-files {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.card-files li,
+.dialog-files li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #cfdbe0;
+}
+
+.card-files li span:first-child,
+.dialog-files li span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--orange));
+  transition: width 0.2s;
+}
+
+.card.done .progress span {
+  background: var(--ok);
+}
+
+.status-pill {
+  flex: none;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.status-pill.doing {
+  color: var(--gold);
+  border-color: rgba(227, 168, 87, 0.5);
+}
+
+.status-pill.done {
+  color: var(--ok);
+  border-color: rgba(127, 211, 168, 0.5);
+}
+
+.file-state {
+  flex: none;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(148, 168, 178, 0.12);
+  color: var(--muted);
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.file-state.found {
+  color: var(--ok);
+  background: rgba(127, 211, 168, 0.12);
+}
+
+.file-state.missing {
+  color: var(--err);
+  background: rgba(239, 138, 134, 0.12);
+}
+
+.detail-btn {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--gold);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.detail-btn:hover {
+  background: rgba(227, 168, 87, 0.12);
+}
+
+/* 가운데와 오른쪽을 잇는 연결선 (데스크톱 전용) */
+.connector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.connector path {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1.6;
+  stroke-dasharray: 5 5;
+  opacity: 0.85;
+}
+
+.connector circle {
+  fill: var(--gold);
+}
+
+/* 상세 창 */
+.dialog {
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #132530;
+  color: var(--text);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.dialog::backdrop {
+  background: rgba(3, 9, 13, 0.7);
+}
+
+.dialog[open] {
+  animation: pop 0.18s ease-out;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.dialog-inner {
+  max-height: calc(100dvh - 32px);
+  padding: 22px;
+  overflow: auto;
+}
+
+.dialog-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.dialog-head h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.dialog-kicker {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+}
+
+.dialog-summary {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.dialog-progress {
+  margin: 0 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ok);
+}
+
+.dialog-section {
+  margin-top: 18px;
+}
+
+.icon-btn {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(8, 18, 26, 0.4);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.checklist label.checked {
+  border-color: rgba(127, 211, 168, 0.5);
+}
+
+.checklist input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--gold);
+}
+
+.error-guide {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: #d5dfe4;
+}
+
+.dialog-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.primary-btn {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f0b765, #d9822f);
+  color: #1b1408;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 화면 크기별 배치 */
+@media (max-width: 1023px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .connector {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px 16px;
+  }
+
+  .brand h1 {
+    font-size: 17px;
+  }
+
+  .brand-mark {
+    width: 44px;
+    height: 44px;
+  }
+
+  .ready-count {
+    font-size: 12px;
+  }
+
+  .error-banner {
+    margin: 12px 16px 0;
+  }
+
+  .panel {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .node-num {
+    width: 40px;
+    height: 40px;
+  }
+
+  .dialog {
+    width: calc(100vw - 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-text">
+          <h1>Shorts Automation Control Tower</h1>
+          <p class="subtitle">REUSABLE WORKSPACE</p>
+        </div>
+      </div>
+      <p id="readyCount" class="ready-count">0 / 6 단계 완료</p>
+    </header>
+
+    <div id="errorBanner" class="error-banner" role="alert" hidden>
+      <p id="errorText"></p>
+      <button type="button" id="errorClose" class="ghost-btn">닫기</button>
+    </div>
+
+    <main id="layout" class="layout">
+      <aside class="panel tree-panel" aria-labelledby="treeTitle">
+        <h2 id="treeTitle" class="panel-label">PROJECT TREE</h2>
+        <ul id="tree" class="tree"></ul>
+
+        <div id="fileInfo" class="file-info" aria-live="polite"></div>
+
+        <section class="side-section" aria-labelledby="connTitle">
+          <h3 id="connTitle" class="panel-label">연결 상태</h3>
+          <ul id="connections" class="conn-list"></ul>
+          <p class="hint">이 화면은 외부 도구를 직접 제어하지 않습니다. 실제로 확인된 연결만 "확인됨"으로 표시합니다.</p>
+        </section>
+
+        <section class="side-section" aria-labelledby="folderTitle">
+          <h3 id="folderTitle" class="panel-label">작업 폴더 확인</h3>
+          <label class="file-pick">
+            작업 폴더 선택
+            <input id="folderInput" type="file" webkitdirectory multiple>
+          </label>
+          <p id="folderStatus" class="hint">선택 전: 모든 파일 경로가 미확인 상태입니다.</p>
+        </section>
+      </aside>
+
+      <section class="panel pipeline-panel" aria-labelledby="pipelineTitle">
+        <div class="section-head">
+          <h2 id="pipelineTitle">전체 파이프라인</h2>
+          <span>6 STEPS</span>
+        </div>
+        <ol id="pipeline" class="pipeline"></ol>
+      </section>
+
+      <section class="panel detail-panel" aria-labelledby="detailTitle">
+        <div class="section-head">
+          <h2 id="detailTitle">단계별 상세 검수</h2>
+          <span id="detailCount">0 / 6 READY</span>
+        </div>
+        <div id="cards" class="cards"></div>
+      </section>
+
+      <svg id="connector" class="connector" aria-hidden="true"></svg>
+    </main>
+  </div>
+
+  <dialog id="detailDialog" class="dialog" aria-labelledby="dialogTitle">
+    <div class="dialog-inner">
+      <header class="dialog-head">
+        <div>
+          <p id="dialogKicker" class="dialog-kicker"></p>
+          <h2 id="dialogTitle"></h2>
+        </div>
+        <button type="button" class="icon-btn" data-close aria-label="닫기">✕</button>
+      </header>
+
+      <p id="dialogSummary" class="dialog-summary"></p>
+      <p id="dialogProgress" class="dialog-progress"></p>
+      <p id="dialogNote" class="card-note" hidden></p>
+
+      <section class="dialog-section">
+        <h3 class="panel-label">검수 체크리스트</h3>
+        <ul id="dialogChecklist" class="checklist"></ul>
+        <p class="hint">체크는 사용자가 직접 확인한 내용만 반영합니다. 이 화면이 결과물을 자동으로 검사하지 않습니다.</p>
+      </section>
+
+      <section class="dialog-section">
+        <h3 class="panel-label">파일 경로</h3>
+        <ul id="dialogFiles" class="dialog-files"></ul>
+      </section>
+
+      <section class="dialog-section">
+        <h3 class="panel-label">오류가 나면 확인할 것</h3>
+        <ul id="dialogErrors" class="error-guide"></ul>
+      </section>
+
+      <footer class="dialog-foot">
+        <button type="button" class="primary-btn" data-close>닫기</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'shorts-control-tower-checks-v1';
+  const desktopQuery = window.matchMedia('(min-width: 1024px)');
+
+  const STEPS = [
+    {
+      id: 1,
+      title: '대본 및 장면 계획',
+      summary: '주제, 장면 수, 톤 규칙을 정하고 장면별 설명과 길이를 작성합니다.',
+      files: ['files/scene-plan.md', 'tone-rules.md'],
+      checklist: [
+        '주제와 대상 시청자가 한 문장으로 정리되어 있다',
+        '장면 수와 장면별 목표 길이(초)가 정해져 있다',
+        '톤 규칙의 금지 표현이 대본에 없다',
+        '장면마다 이미지 설명이 한 줄 이상 적혀 있다',
+      ],
+      errors: [
+        '장면 합계 길이가 목표 길이와 다르면 files/scene-plan.md의 장면별 초 단위를 다시 계산하세요.',
+        '금지 표현이 남아 있으면 tone-rules.md 기준으로 해당 문장을 고친 뒤 다시 체크하세요.',
+      ],
+    },
+    {
+      id: 2,
+      title: '음성 및 오디오 싱크',
+      summary: '대본을 음성으로 만들고 장면별 시작·끝 시간을 맞춥니다.',
+      files: ['files/audio-sync.md'],
+      checklist: [
+        '장면별 음성 파일이 모두 생성되어 있다',
+        '장면별 시작·끝 시간이 기록되어 있다',
+        '자막 타이밍이 음성과 어긋나지 않는다',
+        '음량이 기준 범위 안에 있다',
+      ],
+      errors: [
+        '음성 파일이 없으면 음성 생성 도구의 작업 기록에서 실패한 장면 번호를 확인하세요.',
+        '자막이 밀리면 files/audio-sync.md의 장면별 시작 시간을 먼저 고치세요.',
+      ],
+    },
+    {
+      id: 3,
+      title: '이미지 생성 및 검수',
+      summary: '장면별 이미지를 만들고 인물, 글자, 비율을 확인합니다.',
+      files: ['files/image-review.md'],
+      checklist: [
+        '장면별 이미지가 모두 생성되어 있다',
+        '인물과 글자가 깨지지 않았다',
+        '세로형 9:16 비율로 만들어졌다',
+        '재생성이 필요한 장면을 기록했다',
+      ],
+      errors: [
+        '글자가 깨진 이미지는 재생성하고, 해당 장면 번호를 files/image-review.md에 남기세요.',
+        '비율이 맞지 않으면 생성 설정의 가로세로 비율을 9:16으로 바꾸세요.',
+      ],
+    },
+    {
+      id: 4,
+      title: '영상화 및 생성 결과 검수',
+      summary: '이미지를 짧은 영상 클립으로 만들고 움직임과 길이를 확인합니다.',
+      files: ['files/video-review.md'],
+      checklist: [
+        '장면별 영상 클립이 모두 생성되어 있다',
+        '움직임이 어색한 클립을 찾아 기록했다',
+        '클립 길이가 장면 길이와 맞다',
+        '실패한 클립의 재생성을 마쳤다',
+      ],
+      errors: [
+        '클립 길이가 짧으면 장면 길이 기준으로 다시 생성하세요.',
+        '같은 장면에서 실패가 반복되면 이미지 설명을 더 단순하게 바꾸세요.',
+      ],
+    },
+    {
+      id: 5,
+      title: '모션그래픽 조립 및 편집',
+      summary: '클립, 음성, 자막, 전환 효과를 한 타임라인에 조립합니다.',
+      files: ['files/motion-edit.md'],
+      checklist: [
+        '자막 스타일이 전체 장면에 같게 적용되어 있다',
+        '장면 전환 효과가 적용되어 있다',
+        '배경 음악과 음성의 음량 차이가 적절하다',
+        '편집 타임라인을 저장했다',
+      ],
+      errors: [
+        '음성이 묻히면 배경 음악 음량을 낮추고 다시 들어 보세요.',
+        '타임라인이 저장되지 않으면 편집 도구의 저장 기능과 저장 위치를 확인하세요.',
+      ],
+    },
+    {
+      id: 6,
+      title: '최종 렌더링 및 출력 검수',
+      summary: '최종 파일을 렌더링하고 끝까지 재생해 출력 품질을 확인합니다.',
+      files: ['files/render-check.md', 'examples/good-output.md'],
+      checklist: [
+        '해상도와 비율이 세로형 1080×1920이다',
+        '영상을 처음부터 끝까지 재생해 보았다',
+        '자막이 화면 안에서 읽힌다',
+        '출력 파일명과 저장 위치를 기록했다',
+      ],
+      errors: [
+        '렌더링이 실패하면 저장 공간과 출력 설정을 먼저 확인하세요.',
+        '결과가 기준 예시와 다르면 examples/good-output.md와 나란히 비교하세요.',
+      ],
+    },
+  ];
+
+  const TREE = [
+    { type: 'file', name: 'SKILL.md', path: 'SKILL.md', desc: '제작 규칙과 6단계 진행 순서를 정리한 기준 문서입니다.' },
+    {
+      type: 'folder',
+      name: 'files/',
+      children: [
+        { type: 'file', name: 'INDEX.md', path: 'files/INDEX.md', desc: '단계별 산출물을 찾는 색인입니다.' },
+        { type: 'file', name: 'scene-plan.md', path: 'files/scene-plan.md', desc: '장면 목록과 장면별 길이를 적습니다.' },
+        { type: 'file', name: 'audio-sync.md', path: 'files/audio-sync.md', desc: '장면별 음성 파일과 시작·끝 시간을 기록합니다.' },
+        { type: 'file', name: 'image-review.md', path: 'files/image-review.md', desc: '이미지 검수 결과와 재생성 장면을 기록합니다.' },
+        { type: 'file', name: 'video-review.md', path: 'files/video-review.md', desc: '영상 클립 검수 결과를 기록합니다.' },
+        { type: 'file', name: 'motion-edit.md', path: 'files/motion-edit.md', desc: '자막, 전환, 음량 편집 내역을 기록합니다.' },
+        { type: 'file', name: 'render-check.md', path: 'files/render-check.md', desc: '최종 렌더링과 출력 검수 내역을 기록합니다.' },
+      ],
+    },
+    {
+      type: 'folder',
+      name: 'examples/',
+      children: [
+        { type: 'file', name: 'good-output.md', path: 'examples/good-output.md', desc: '통과한 결과물의 기준 예시입니다.' },
+      ],
+    },
+    { type: 'file', name: 'tone-rules.md', path: 'tone-rules.md', desc: '말투, 금지 표현, 자막 톤 기준입니다.' },
+  ];
+
+  const ALL_FILES = [];
+  (function collectFiles(nodes) {
+    nodes.forEach((node) => {
+      if (node.type === 'folder') {
+        collectFiles(node.children);
+      } else {
+        ALL_FILES.push(node);
+      }
+    });
+  })(TREE);
+
+  const $ = (id) => document.getElementById(id);
+
+  let checks = {};
+  let folderFiles = null; // 선택한 폴더 안의 상대 경로 Set. 폴더를 고르지 않았으면 null
+  let selectedStepId = 1;
+  let selectedPath = 'SKILL.md';
+  let dialogStepId = null;
+  const openFolders = new Set(['files/', 'examples/']);
+  let connectorFrame = 0;
+
+  /* ---------- 오류 안내 ---------- */
+
+  function showError(message, error, hint, level = 'error') {
+    const detail = error && error.message ? error.message : (error ? String(error) : '');
+    const parts = [message];
+    if (detail) parts.push(`(${detail})`);
+    if (hint) parts.push(`확인: ${hint}`);
+    $('errorText').textContent = parts.join(' ');
+    $('errorBanner').className = `error-banner ${level}`;
+    $('errorBanner').hidden = false;
+  }
+
+  $('errorClose').addEventListener('click', () => {
+    $('errorBanner').hidden = true;
+  });
+
+  window.addEventListener('error', (event) => {
+    showError(
+      '화면 스크립트에서 오류가 발생했습니다.',
+      event.error || event.message,
+      '새로고침 후에도 같으면 브라우저 개발자 도구(F12)의 Console 메시지를 확인하세요.'
+    );
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    showError(
+      '처리되지 않은 작업 오류가 발생했습니다.',
+      event.reason,
+      '새로고침 후에도 같으면 Console 메시지를 확인하세요.'
+    );
+  });
+
+  /* ---------- 체크 상태 저장 ---------- */
+
+  function loadChecks() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+      showError(
+        '저장된 체크 상태를 읽지 못해 빈 상태로 시작합니다.',
+        error,
+        '브라우저의 사이트 데이터 설정과 비공개 탐색 모드 여부를 확인하세요.',
+        'warn'
+      );
+      return {};
+    }
+  }
+
+  function saveChecks() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(checks));
+    } catch (error) {
+      showError(
+        '체크 상태를 저장하지 못했습니다. 새로고침하면 변경 내용이 사라집니다.',
+        error,
+        '저장 공간이 가득 찼는지, 사이트 데이터 저장이 차단되었는지 확인하세요.',
+        'warn'
+      );
+    }
+  }
+
+  function getFlags(step) {
+    const saved = Array.isArray(checks[step.id]) ? checks[step.id] : [];
+    return step.checklist.map((_, index) => saved[index] === true);
+  }
+
+  function setFlag(step, index, value) {
+    const flags = getFlags(step);
+    flags[index] = value;
+    checks[step.id] = flags;
+    saveChecks();
+  }
+
+  /* ---------- 상태 계산 ---------- */
+
+  function fileState(path) {
+    if (folderFiles === null) return { key: 'unknown', label: '미확인' };
+    return folderFiles.has(path)
+      ? { key: 'found', label: '확인됨' }
+      : { key: 'missing', label: '없음' };
+  }
+
+  function stepForPath(path) {
+    return STEPS.find((step) => step.files.includes(path)) || null;
+  }
+
+  function stepInfo(step) {
+    const flags = getFlags(step);
+    const done = flags.filter(Boolean).length;
+    const total = flags.length;
+    const files = step.files.map(fileState);
+    const filesFound = files.filter((file) => file.key === 'found').length;
+
+    let key = 'todo';
+    let label = '대기';
+    if (done === total) {
+      key = 'done';
+      label = '완료';
+    } else if (done > 0) {
+      key = 'doing';
+      label = '진행 중';
+    }
+
+    let note = '';
+    if (key === 'done' && filesFound < files.length) {
+      note = folderFiles === null
+        ? '체크리스트는 끝났지만 파일 경로는 아직 미확인입니다. 작업 폴더를 선택해 확인하세요.'
+        : '체크리스트는 끝났지만 선택한 폴더에서 일부 파일을 찾지 못했습니다.';
+    }
+
+    return {
+      flags,
+      done,
+      total,
+      key,
+      label,
+      files,
+      filesFound,
+      note,
+      percent: total ? Math.round((done / total) * 100) : 0,
+    };
+  }
+
+  /* ---------- 렌더링 ---------- */
+
+  function renderSummary() {
+    const completed = STEPS.filter((step) => stepInfo(step).key === 'done').length;
+    $('readyCount').textContent = `${completed} / ${STEPS.length} 단계 완료`;
+    $('detailCount').textContent = `${completed} / ${STEPS.length} READY`;
+  }
+
+  function renderConnections() {
+    const folderRow = folderFiles === null
+      ? { name: '작업 폴더', cls: 'wait', text: '선택 안 됨', note: '폴더를 고르면 파일 경로를 확인합니다.' }
+      : { name: '작업 폴더', cls: 'on', text: '확인됨', note: `${folderFiles.size}개 파일의 이름과 경로를 읽었습니다. 파일 내용은 읽지 않습니다.` };
+
+    const rows = [
+      { name: 'Google Flow', cls: 'off', text: '미연결', note: '이 화면은 Google Flow를 호출하지 않습니다.' },
+      { name: 'CapCut', cls: 'off', text: '미연결', note: '이 화면은 CapCut을 제어하지 않습니다.' },
+      folderRow,
+    ];
+
+    $('connections').innerHTML = rows.map((row) => `
+      <li>
+        <div>
+          <strong>${row.name}</strong>
+          <span class="conn-note">${row.note}</span>
+        </div>
+        <span class="state ${row.cls}">${row.text}</span>
+      </li>`).join('');
+  }
+
+  function treeHtml(nodes) {
+    return nodes.map((node) => {
+      if (node.type === 'folder') {
+        const open = openFolders.has(node.name);
+        return `
+          <li>
+            <button type="button" class="tree-btn" data-folder="${node.name}" aria-expanded="${open}">
+              <span class="caret" aria-hidden="true">▼</span>
+              <span>${node.name}</span>
+            </button>
+            ${open ? `<ul>${treeHtml(node.children)}</ul>` : ''}
+          </li>`;
+      }
+
+      const step = stepForPath(node.path);
+      const state = fileState(node.path);
+      const current = selectedPath === node.path ? ' aria-current="true"' : '';
+      return `
+        <li>
+          <button type="button" class="tree-btn" data-file="${node.path}"${current}>
+            <span class="dot ${state.key}" aria-hidden="true"></span>
+            <span>${node.name}</span>
+            ${step ? `<span class="tag">${step.id}단계</span>` : ''}
+          </button>
+        </li>`;
+    }).join('');
+  }
+
+  function renderTree() {
+    $('tree').innerHTML = treeHtml(TREE);
+  }
+
+  function renderFileInfo() {
+    const box = $('fileInfo');
+    const node = ALL_FILES.find((file) => file.path === selectedPath);
+    if (!node) {
+      box.innerHTML = '<p>파일을 선택하면 설명과 연결된 검수 단계가 표시됩니다.</p>';
+      return;
+    }
+
+    const state = fileState(node.path);
+    const step = stepForPath(node.path);
+    const link = step
+      ? `<button type="button" class="link-btn" data-open-step="${step.id}">${step.id}단계 · ${step.title}</button>`
+      : '연결된 검수 단계가 없습니다.';
+
+    box.innerHTML = `
+      <strong>${node.path}</strong>
+      <p>${node.desc}</p>
+      <p>파일 상태: <span class="file-state ${state.key}">${state.label}</span></p>
+      <p>연결 단계: ${link}</p>`;
+  }
+
+  function renderPipeline() {
+    $('pipeline').innerHTML = STEPS.map((step) => {
+      const info = stepInfo(step);
+      const selected = selectedStepId === step.id ? ' is-selected' : '';
+      return `
+        <li>
+          <button type="button" class="node ${info.key}${selected}" data-step="${step.id}"
+            aria-label="${step.id}단계 ${step.title}, ${info.label}, 체크 ${info.done}/${info.total}">
+            <span class="node-num" aria-hidden="true">${step.id}</span>
+            <span class="node-body">
+              <span class="node-title">${step.title}</span>
+              <span class="node-meta">${info.label} · 체크 ${info.done}/${info.total} · 파일 확인 ${info.filesFound}/${info.files.length}</span>
+              <span class="bar"><span style="width: ${info.percent}%"></span></span>
+            </span>
+          </button>
+        </li>`;
+    }).join('');
+  }
+
+  function renderCards() {
+    $('cards').innerHTML = STEPS.map((step) => {
+      const info = stepInfo(step);
+      const selected = selectedStepId === step.id ? ' is-selected' : '';
+      const note = info.note ? `<p class="card-note">${info.note}</p>` : '';
+      const files = step.files.map((path, index) => `
+        <li>
+          <span>${path}</span>
+          <span class="file-state ${info.files[index].key}">${info.files[index].label}</span>
+        </li>`).join('');
+
+      return `
+        <article class="card ${info.key}${selected}" id="card-${step.id}" data-card="${step.id}">
+          <div class="card-head">
+            <span class="card-badge" aria-hidden="true">${String(step.id).padStart(2, '0')}</span>
+            <span class="status-pill ${info.key}">${info.label}</span>
+          </div>
+          <h3>${step.title}</h3>
+          <p class="card-summary">${step.summary}</p>
+          <div class="bar"><span style="width: ${info.percent}%"></span></div>
+          <p class="card-meta">체크 ${info.done}/${info.total} · 파일 확인 ${info.filesFound}/${info.files.length}</p>
+          ${note}
+          <ul class="card-files">${files}</ul>
+          <button type="button" class="detail-btn" data-step="${step.id}">세부보기</button>
+        </article>`;
+    }).join('');
+  }
+
+  function renderAll() {
+    renderSummary();
+    renderConnections();
+    renderTree();
+    renderFileInfo();
+    renderPipeline();
+    renderCards();
+    drawConnector();
+  }
+
+  /* ---------- 연결선 ---------- */
+
+  function drawConnector() {
+    const svg = $('connector');
+    svg.replaceChildren();
+    if (!desktopQuery.matches) return;
+
+    const node = $('pipeline').querySelector(`[data-step="${selectedStepId}"]`);
+    const card = document.getElementById(`card-${selectedStepId}`);
+    if (!node || !card) return;
+
+    const cardRect = card.getBoundingClientRect();
+    if (cardRect.bottom < 0 || cardRect.top > window.innerHeight) return;
+
+    const box = $('layout').getBoundingClientRect();
+    const from = node.getBoundingClientRect();
+    const to = cardRect;
+    const x1 = from.right - box.left;
+    const y1 = from.top + from.height / 2 - box.top;
+    const x2 = to.left - box.left;
+    const y2 = to.top + to.height / 2 - box.top;
+    const curve = Math.max(40, (x2 - x1) / 2);
+
+    svg.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`);
+    svg.innerHTML = `
+      <path d="M${x1} ${y1} C${x1 + curve} ${y1} ${x2 - curve} ${y2} ${x2} ${y2}"></path>
+      <circle cx="${x1}" cy="${y1}" r="4"></circle>
+      <circle cx="${x2}" cy="${y2}" r="4"></circle>`;
+  }
+
+  function scheduleConnector() {
+    cancelAnimationFrame(connectorFrame);
+    connectorFrame = requestAnimationFrame(drawConnector);
+  }
+
+  /* ---------- 상세 창 ---------- */
+
+  const dialog = $('detailDialog');
+
+  function refreshDialog(step) {
+    const info = stepInfo(step);
+    $('dialogKicker').textContent = `${step.id}단계 · ${info.label}`;
+    $('dialogProgress').textContent = `체크 ${info.done}/${info.total} · 파일 확인 ${info.filesFound}/${info.files.length}`;
+    $('dialogNote').textContent = info.note;
+    $('dialogNote').hidden = !info.note;
+    $('dialogFiles').innerHTML = step.files.map((path, index) => `
+      <li>
+        <span>${path}</span>
+        <span class="file-state ${info.files[index].key}">${info.files[index].label}</span>
+      </li>`).join('');
+  }
+
+  function renderDialog(step) {
+    const info = stepInfo(step);
+    $('dialogTitle').textContent = step.title;
+    $('dialogSummary').textContent = step.summary;
+    $('dialogChecklist').innerHTML = step.checklist.map((text, index) => {
+      const checked = info.flags[index];
+      return `
+        <li>
+          <label class="${checked ? 'checked' : ''}">
+            <input type="checkbox" data-index="${index}"${checked ? ' checked' : ''}>
+            <span>${text}</span>
+          </label>
+        </li>`;
+    }).join('');
+    $('dialogErrors').innerHTML = step.errors.map((text) => `<li>${text}</li>`).join('');
+    refreshDialog(step);
+  }
+
+  function openDetail(stepId) {
+    const step = STEPS.find((item) => item.id === stepId);
+    if (!step) return;
+
+    selectedStepId = stepId;
+    dialogStepId = stepId;
+    renderDialog(step);
+
+    if (typeof dialog.showModal === 'function') {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      dialog.setAttribute('open', '');
+    }
+    renderAll();
+  }
+
+  function closeDialog() {
+    if (typeof dialog.close === 'function') {
+      dialog.close();
+    } else {
+      dialog.removeAttribute('open');
+    }
+    dialogStepId = null;
+  }
+
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog || event.target.closest('[data-close]')) {
+      closeDialog();
+    }
+  });
+
+  $('dialogChecklist').addEventListener('change', (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
+
+    const step = STEPS.find((item) => item.id === dialogStepId);
+    if (!step) return;
+
+    setFlag(step, Number(input.dataset.index), input.checked);
+    input.closest('label').classList.toggle('checked', input.checked);
+    refreshDialog(step);
+    renderAll();
+  });
+
+  /* ---------- 이벤트 연결 ---------- */
+
+  $('pipeline').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-step]');
+    if (button) openDetail(Number(button.dataset.step));
+  });
+
+  $('cards').addEventListener('click', (event) => {
+    const detailBtn = event.target.closest('.detail-btn');
+    if (detailBtn) {
+      openDetail(Number(detailBtn.dataset.step));
+      return;
+    }
+
+    const card = event.target.closest('[data-card]');
+    if (card) {
+      selectedStepId = Number(card.dataset.card);
+      renderAll();
+    }
+  });
+
+  $('tree').addEventListener('click', (event) => {
+    const button = event.target.closest('button');
+    if (!button) return;
+
+    if (button.dataset.folder) {
+      const name = button.dataset.folder;
+      if (openFolders.has(name)) {
+        openFolders.delete(name);
+      } else {
+        openFolders.add(name);
+      }
+      renderTree();
+      $('tree').querySelector(`[data-folder="${name}"]`)?.focus({ preventScroll: true });
+      return;
+    }
+
+    if (button.dataset.file) {
+      selectedPath = button.dataset.file;
+      renderTree();
+      renderFileInfo();
+      $('tree').querySelector(`[data-file="${selectedPath}"]`)?.focus({ preventScroll: true });
+    }
+  });
+
+  $('fileInfo').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-open-step]');
+    if (button) openDetail(Number(button.dataset.openStep));
+  });
+
+  $('folderInput').addEventListener('change', (event) => {
+    const files = Array.from(event.target.files || []);
+    folderFiles = files.length === 0 ? null : new Set(files.map(relativePath));
+
+    $('folderStatus').textContent = folderFiles === null
+      ? '선택 전: 모든 파일 경로가 미확인 상태입니다.'
+      : `${folderFiles.size}개 파일 이름을 읽었습니다. 선택한 폴더 안의 경로만 비교합니다.`;
+
+    renderAll();
+  });
+
+  // 선택한 폴더 이름(최상위)을 뺀 경로로 비교합니다. 예: 작업폴더/files/scene-plan.md → files/scene-plan.md
+  function relativePath(file) {
+    if (!file.webkitRelativePath) return file.name;
+    return file.webkitRelativePath.split('/').slice(1).join('/');
+  }
+
+  window.addEventListener('scroll', scheduleConnector, { passive: true });
+  window.addEventListener('resize', scheduleConnector);
+  if (typeof desktopQuery.addEventListener === 'function') {
+    desktopQuery.addEventListener('change', drawConnector);
+  }
+
+  /* ---------- 오프라인 실행 ---------- */
+
+  function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+
+    const secure = location.protocol === 'https:'
+      || location.hostname === 'localhost'
+      || location.hostname === '127.0.0.1';
+    if (!secure) return;
+
+    navigator.serviceWorker.register('sw.js').catch((error) => {
+      showError(
+        '오프라인 기능을 등록하지 못했습니다.',
+        error,
+        'HTTPS 주소로 열었는지, sw.js가 index.html과 같은 폴더에 있는지 확인하세요.',
+        'warn'
+      );
+    });
+  }
+
+  /* ---------- 시작 ---------- */
+
+  checks = loadChecks();
+  renderAll();
+
+  if (location.protocol === 'file:') {
+    showError(
+      '파일로 직접 열었습니다. 오프라인 실행과 앱 설치는 HTTPS 주소 또는 localhost에서만 동작합니다.',
+      null,
+      'README.md의 실행 방법을 참고하세요.',
+      'warn'
+    );
+  }
+
+  registerServiceWorker();
+})();
+  </script>
+</body>
+</html>
